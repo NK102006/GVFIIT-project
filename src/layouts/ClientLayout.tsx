@@ -6,9 +6,8 @@ import {
   Calendar, 
   Activity, 
   Dumbbell, 
-  LogOut, 
-  Menu,
-  X
+  LogOut,
+  Menu
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';

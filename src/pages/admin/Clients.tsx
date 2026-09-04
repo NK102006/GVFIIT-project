@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Search, UserPlus, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type Client = {
