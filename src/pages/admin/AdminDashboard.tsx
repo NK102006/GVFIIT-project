@@ -1,178 +1,265 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { collection, getDocs } from 'firebase/firestore';
+import { Users, UserCheck, Dumbbell, AlertTriangle, UserPlus, ListChecks } from 'lucide-react';
 import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs, getCountFromServer, orderBy, limit as firestoreLimit } from 'firebase/firestore';
-import { Users, Calendar, Activity, CreditCard, TrendingUp, Snowflake, UserPlus } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import type { Profile } from '../../contexts/AuthContext';
+import StatCard from '../../components/StatCard';
+import MembershipDonut from '../../components/MembershipDonut';
+import MonthlyBarChart from '../../components/MonthlyBarChart';
+import { lastMonthBuckets, countByMonth, daysUntil } from '../../lib/dateUtils';
 
-type DashboardStats = {
-  totalClients: number;
-  activeMembers: number;
-  trialMembers: number;
-  expiredMembers: number;
-  totalCoaches: number;
-  todaysBookings: number;
-  todaysRecoveryBookings: number;
-  todaysAttendance: number;
-  monthlyRevenue: number;
-  attendanceRate: number;
-};
-
-type RecentClient = {
-  _id: string;
-  fullName: string;
-  email: string;
-  membershipStatus: string;
-  planType: string;
-  createdAt: string;
-};
+const EXPIRING_WINDOW_DAYS = 14;
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentClients, setRecentClients] = useState<RecentClient[]>([]);
+  const { profile, staff } = useAuth();
+  const displayName = profile?.fullName?.split(' ')[0] || staff?.name || 'Admin';
+
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [createdAtById, setCreatedAtById] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        const profilesRef = collection(db, 'profiles');
-        
-        // Parallel counts
-        const [
-          totalClientsSnap,
-          activeMembersSnap,
-          trialMembersSnap,
-          expiredMembersSnap,
-          totalCoachesSnap,
-          recentClientsSnap
-        ] = await Promise.all([
-          getCountFromServer(query(profilesRef, where('role', '==', 'CLIENT'))),
-          getCountFromServer(query(profilesRef, where('role', '==', 'CLIENT'), where('membershipStatus', '==', 'ACTIVE'))),
-          getCountFromServer(query(profilesRef, where('role', '==', 'CLIENT'), where('membershipStatus', '==', 'TRIAL'))),
-          getCountFromServer(query(profilesRef, where('role', '==', 'CLIENT'), where('membershipStatus', '==', 'EXPIRED'))),
-          getCountFromServer(query(profilesRef, where('role', '==', 'COACH'))),
-          getDocs(query(profilesRef, where('role', '==', 'CLIENT'), orderBy('createdAt', 'desc'), firestoreLimit(5)))
-        ]);
-
-        const recent = recentClientsSnap.docs.map(doc => ({
-          _id: doc.id,
-          ...doc.data()
-        })) as RecentClient[];
-
-        setStats({
-          totalClients: totalClientsSnap.data().count,
-          activeMembers: activeMembersSnap.data().count,
-          trialMembers: trialMembersSnap.data().count,
-          expiredMembers: expiredMembersSnap.data().count,
-          totalCoaches: totalCoachesSnap.data().count,
-          todaysBookings: 0, // Requires bookings collection setup
-          todaysRecoveryBookings: 0, // Requires recovery collection setup
-          todaysAttendance: 0, // Requires attendance collection setup
-          monthlyRevenue: 0, // Requires payments collection setup
-          attendanceRate: 0, 
-        });
-        
-        setRecentClients(recent);
-      } catch (err: any) {
-        console.error('Error fetching stats:', err);
-        setError(err.message || 'Failed to load dashboard from Firestore');
+    const load = async () => {
+      if (!db?.app) {
+        setError('Firebase is not configured. Add your VITE_FIREBASE_* values to .env.');
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    }
-
-    fetchStats();
+      try {
+        const snap = await getDocs(collection(db, 'profiles'));
+        const loaded: Profile[] = [];
+        const createdAt: Record<string, string> = {};
+        snap.docs.forEach((d) => {
+          const data = d.data();
+          loaded.push({ id: d.id, ...data } as Profile);
+          if (data.createdAt) createdAt[d.id] = data.createdAt;
+        });
+        setProfiles(loaded);
+        setCreatedAtById(createdAt);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load dashboard data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="p-8 flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400 text-sm uppercase tracking-widest animate-pulse">Loading dashboard...</div>
-      </div>
-    );
-  }
+  const clients = useMemo(() => profiles.filter((p) => p.role === 'CLIENT'), [profiles]);
+  const coaches = useMemo(() => profiles.filter((p) => p.role === 'COACH'), [profiles]);
+  const activeClients = useMemo(() => clients.filter((p) => p.membershipStatus === 'ACTIVE'), [clients]);
 
-  if (error) {
-    return (
-      <div className="p-8">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-sm p-4 text-red-400 text-sm">
-          <strong>Error:</strong> {error}
-          <p className="mt-1 text-red-500/70">Make sure the backend server is running on port 5000.</p>
-        </div>
-      </div>
-    );
-  }
+  const expiringClients = useMemo(
+    () =>
+      clients
+        .map((c) => ({ client: c, days: daysUntil(c.planExpiry) }))
+        .filter((x): x is { client: Profile; days: number } => x.days !== null && x.days >= 0 && x.days <= EXPIRING_WINDOW_DAYS)
+        .sort((a, b) => a.days - b.days),
+    [clients]
+  );
 
-  const statCards = [
-    { name: 'Total Clients', value: stats?.totalClients ?? 0, icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
-    { name: 'Active Members', value: stats?.activeMembers ?? 0, icon: CreditCard, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-    { name: 'Bookings Today', value: stats?.todaysBookings ?? 0, icon: Calendar, color: 'text-accent', bg: 'bg-accent/10 border-accent/20' },
-    { name: 'Recovery Today', value: stats?.todaysRecoveryBookings ?? 0, icon: Snowflake, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20' },
-    { name: 'Attendance Rate', value: `${stats?.attendanceRate ?? 0}%`, icon: Activity, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
-    { name: 'Monthly Revenue', value: `₹${(stats?.monthlyRevenue ?? 0).toLocaleString()}`, icon: TrendingUp, color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20' },
+  const statusBreakdown = useMemo(() => {
+    const counts: Record<Profile['membershipStatus'], number> = {
+      ACTIVE: 0,
+      TRIAL: 0,
+      INACTIVE: 0,
+      EXPIRED: 0,
+    };
+    clients.forEach((c) => {
+      counts[c.membershipStatus] = (counts[c.membershipStatus] || 0) + 1;
+    });
+    return [
+      { name: 'Active', value: counts.ACTIVE, color: '#22c55e' },
+      { name: 'Trial', value: counts.TRIAL, color: '#3b82f6' },
+      { name: 'Inactive', value: counts.INACTIVE, color: '#71717a' },
+      { name: 'Expired', value: counts.EXPIRED, color: '#ef4444' },
+    ];
+  }, [clients]);
+
+  const monthBuckets = useMemo(() => lastMonthBuckets(6), []);
+  const signupsByMonth = useMemo(
+    () => countByMonth(clients.map((c) => createdAtById[c.id]), monthBuckets),
+    [clients, createdAtById, monthBuckets]
+  );
+
+  const recentClients = useMemo(
+    () =>
+      [...clients]
+        .sort((a, b) => (createdAtById[b.id] || '').localeCompare(createdAtById[a.id] || ''))
+        .slice(0, 5),
+    [clients, createdAtById]
+  );
+
+  const stats = [
+    { label: 'Total Clients', value: clients.length, icon: Users, iconBg: 'bg-accent/15', iconColor: 'text-accent' },
+    {
+      label: 'Active Memberships',
+      value: activeClients.length,
+      icon: UserCheck,
+      iconBg: 'bg-green-500/15',
+      iconColor: 'text-green-400',
+    },
+    {
+      label: 'Coaches on Roster',
+      value: coaches.length,
+      icon: Dumbbell,
+      iconBg: 'bg-blue-500/15',
+      iconColor: 'text-blue-400',
+    },
+    {
+      label: `Expiring in ${EXPIRING_WINDOW_DAYS} Days`,
+      value: expiringClients.length,
+      icon: AlertTriangle,
+      iconBg: 'bg-amber-500/15',
+      iconColor: 'text-amber-400',
+    },
   ];
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-heading font-bold text-white mb-8">Overview</h1>
-      
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {statCards.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <div key={idx} className="bg-zinc-900 border border-white/10 p-6 rounded-sm hover:border-white/20 transition-colors">
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-3 rounded-sm border ${stat.bg} ${stat.color}`}>
-                  <Icon size={22} />
-                </div>
-              </div>
-              <div className="text-3xl font-heading font-black text-white mb-1">{stat.value}</div>
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-widest">{stat.name}</div>
-            </div>
-          );
-        })}
+    <div className="p-6 md:p-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-heading font-bold mb-1">Welcome back, {displayName}!</h1>
+        <p className="text-gray-400">Here's what's happening with GV FIIT today.</p>
       </div>
 
-      {/* Recent Clients & Placeholders */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Signups */}
-        <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <UserPlus size={18} className="text-accent" />
-            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400">Recent Signups</h2>
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-sm text-sm mb-6">{error}</div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {stats.map((s) => (
+          <StatCard key={s.label} label={s.label} value={loading ? '—' : s.value} icon={s.icon} iconBg={s.iconBg} iconColor={s.iconColor} />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-heading font-bold">New Sign-ups</h2>
+            <span className="text-xs text-gray-500">Last 6 months</span>
           </div>
-          {recentClients.length === 0 ? (
+          {loading ? (
+            <p className="text-gray-500 text-sm">Loading...</p>
+          ) : (
+            <MonthlyBarChart labels={monthBuckets.map((b) => b.label)} values={signupsByMonth} />
+          )}
+        </div>
+
+        <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
+          <h2 className="text-lg font-heading font-bold mb-4">Membership Status</h2>
+          {loading ? (
+            <p className="text-gray-500 text-sm">Loading...</p>
+          ) : (
+            <MembershipDonut data={statusBreakdown} total={clients.length} />
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-heading font-bold">Recent Clients</h2>
+            <Link to="/admin/clients" className="text-sm text-accent hover:text-white transition-colors">
+              View all →
+            </Link>
+          </div>
+
+          {loading ? (
+            <p className="text-gray-500 text-sm">Loading...</p>
+          ) : recentClients.length === 0 ? (
             <p className="text-gray-500 text-sm">No clients yet.</p>
           ) : (
-            <div className="space-y-4">
-              {recentClients.map((client) => (
-                <div key={client._id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-                  <div>
-                    <div className="font-bold text-white text-sm">{client.fullName}</div>
-                    <div className="text-xs text-gray-500">{client.email}</div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded-sm ${
-                      client.membershipStatus === 'ACTIVE' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                        : client.membershipStatus === 'TRIAL'
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                    }`}>
-                      {client.membershipStatus}
-                    </span>
-                    <div className="text-[10px] text-gray-600 mt-1">
-                      {new Date(client.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 text-left text-gray-500 text-xs uppercase tracking-wider">
+                    <th className="py-2 pr-4 font-medium">Name</th>
+                    <th className="py-2 pr-4 font-medium">Status</th>
+                    <th className="py-2 pr-4 font-medium">Plan</th>
+                    <th className="py-2 font-medium">Joined</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {recentClients.map((c) => (
+                    <tr key={c.id}>
+                      <td className="py-3 pr-4">
+                        <p className="font-medium">{c.fullName}</p>
+                        <p className="text-xs text-gray-500">{c.email}</p>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-sm font-medium ${
+                            c.membershipStatus === 'ACTIVE'
+                              ? 'bg-green-500/10 text-green-400'
+                              : c.membershipStatus === 'TRIAL'
+                              ? 'bg-blue-500/10 text-blue-400'
+                              : c.membershipStatus === 'EXPIRED'
+                              ? 'bg-red-500/10 text-red-400'
+                              : 'bg-gray-500/10 text-gray-400'
+                          }`}
+                        >
+                          {c.membershipStatus}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4 text-gray-400">{c.planType}</td>
+                      <td className="py-3 text-gray-400">
+                        {createdAtById[c.id] ? new Date(createdAtById[c.id]).toLocaleDateString() : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
-        {/* Placeholder for future chart */}
-        <div className="bg-zinc-900 border border-white/10 rounded-sm p-6 h-96 flex items-center justify-center">
-          <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Membership Growth Chart (Coming Soon)</p>
+        <div className="space-y-6">
+          <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
+            <h2 className="text-lg font-heading font-bold mb-4">Expiring Soon</h2>
+            {loading ? (
+              <p className="text-gray-500 text-sm">Loading...</p>
+            ) : expiringClients.length === 0 ? (
+              <p className="text-gray-500 text-sm">No memberships expiring in the next {EXPIRING_WINDOW_DAYS} days.</p>
+            ) : (
+              <div className="space-y-3">
+                {expiringClients.slice(0, 5).map(({ client, days }) => (
+                  <div key={client.id} className="flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-medium">{client.fullName}</p>
+                      <p className="text-xs text-gray-500">{client.email}</p>
+                    </div>
+                    <span className="text-xs font-semibold text-amber-400 shrink-0 ml-2">
+                      {days === 0 ? 'Today' : `${days}d left`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
+            <h2 className="text-lg font-heading font-bold mb-4">Quick Actions</h2>
+            <div className="space-y-2">
+              <Link
+                to="/admin/clients"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <UserPlus size={16} className="text-accent" />
+                Add New Client
+              </Link>
+              <Link
+                to="/admin/clients"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <ListChecks size={16} className="text-accent" />
+                View All Clients
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -4,15 +4,15 @@ import { LayoutDashboard, Users, LogOut, Menu, X } from 'lucide-react';
 import { useAuth, fullLogout } from '../contexts/AuthContext';
 
 const navItems = [
-  { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
-  { to: '/admin/clients', label: 'Clients', icon: Users, end: false },
+  { to: '/coach', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/coach/clients', label: 'My Clients', icon: Users, end: false },
 ];
 
-export default function AdminLayout() {
+export default function CoachLayout() {
   const { profile, staff, staffLogout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const displayName = profile?.fullName || staff?.name || 'Admin';
+  const displayName = profile?.fullName || staff?.name || 'Coach';
 
   const handleLogout = async () => {
     await fullLogout(staffLogout);
@@ -22,8 +22,8 @@ export default function AdminLayout() {
     <div className="h-screen bg-black text-white flex overflow-hidden">
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-zinc-900 border-b border-white/10 flex items-center justify-between px-4 z-30">
-        <Link to="/admin" className="font-heading font-black tracking-tighter text-lg">
-          GV<span className="text-accent">FIIT</span> <span className="text-gray-500 text-xs font-normal">Admin</span>
+        <Link to="/coach" className="font-heading font-black tracking-tighter text-lg">
+          GV<span className="text-accent">FIIT</span> <span className="text-gray-500 text-xs font-normal">Coach</span>
         </Link>
         <button onClick={() => setMobileOpen((v) => !v)} className="text-white">
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -38,10 +38,10 @@ export default function AdminLayout() {
         }`}
       >
         <div className="hidden md:block px-6 py-6 border-b border-white/10">
-          <Link to="/admin" className="font-heading font-black tracking-tighter text-xl">
+          <Link to="/coach" className="font-heading font-black tracking-tighter text-xl">
             GV<span className="text-accent">FIIT</span>
           </Link>
-          <p className="text-xs text-gray-500 mt-1 tracking-widest uppercase">Admin</p>
+          <p className="text-xs text-gray-500 mt-1 tracking-widest uppercase">Coach</p>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -66,7 +66,7 @@ export default function AdminLayout() {
         <div className="px-3 py-4 border-t border-white/10">
           <div className="px-3 pb-3">
             <p className="text-sm font-semibold text-white truncate">{displayName}</p>
-            <p className="text-xs text-gray-500">Administrator</p>
+            <p className="text-xs text-gray-500">Coach</p>
           </div>
           <button
             onClick={handleLogout}

@@ -1,237 +1,354 @@
 import { useEffect, useState } from 'react';
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
+import { Plus, Pencil, Trash2, X, Search } from 'lucide-react';
 import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Search, UserPlus, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import type { Profile } from '../../contexts/AuthContext';
 
-type Client = {
-  _id: string; // Used mapping doc.id to _id for table rows
+type ClientFormState = {
   fullName: string;
   email: string;
-  phone: string | null;
-  membershipStatus: 'ACTIVE' | 'INACTIVE' | 'EXPIRED' | 'TRIAL';
-  planType: string;
-  createdAt: string;
+  phone: string;
+  membershipStatus: Profile['membershipStatus'];
+  planType: Profile['planType'];
 };
 
-type Pagination = {
-  total: number;
-  page: number;
-  limit: number;
-  pages: number;
+const emptyForm: ClientFormState = {
+  fullName: '',
+  email: '',
+  phone: '',
+  membershipStatus: 'TRIAL',
+  planType: 'NONE',
 };
 
 export default function Clients() {
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [pagination, setPagination] = useState<Pagination>({ total: 0, page: 1, limit: 50, pages: 1 });
-  const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState('');
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<ClientFormState>(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const loadClients = async () => {
+    if (!db?.app) {
+      setError('Firebase is not configured. Add your VITE_FIREBASE_* values to .env.');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'profiles'), where('role', '==', 'CLIENT'));
+      const snap = await getDocs(q);
+      setClients(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Profile)));
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load clients.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchClients();
-  }, [pagination.page, statusFilter]);
+    loadClients();
+  }, []);
 
-  const fetchClients = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let q = query(collection(db, 'profiles'), where('role', '==', 'CLIENT'));
-
-      if (statusFilter) {
-        q = query(q, where('membershipStatus', '==', statusFilter));
-      }
-
-      // Simple implementation: fetch all matching and paginate/search in memory
-      // For large datasets, use cursor-based pagination with Firestore
-      const querySnapshot = await getDocs(q);
-      
-      let allClients = querySnapshot.docs.map(doc => ({
-        _id: doc.id,
-        ...doc.data()
-      })) as Client[];
-
-      if (searchTerm) {
-        const lowerSearch = searchTerm.toLowerCase();
-        allClients = allClients.filter(c => 
-          c.fullName.toLowerCase().includes(lowerSearch) || 
-          c.email.toLowerCase().includes(lowerSearch)
-        );
-      }
-
-      // Sort by createdAt descending
-      allClients.sort((a, b) => {
-        if (!a.createdAt) return 1;
-        if (!b.createdAt) return -1;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-
-      const total = allClients.length;
-      const pages = Math.ceil(total / pagination.limit) || 1;
-      
-      const startIdx = (pagination.page - 1) * pagination.limit;
-      const paginatedClients = allClients.slice(startIdx, startIdx + pagination.limit);
-
-      setClients(paginatedClients);
-      setPagination(prev => ({ ...prev, total, pages }));
-    } catch (err: any) {
-      console.error('Error fetching clients:', err);
-      setError(err.message || 'Failed to fetch clients from Firestore');
-    }
-    setLoading(false);
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setModalOpen(true);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const openEditModal = (client: Profile) => {
+    setEditingId(client.id);
+    setForm({
+      fullName: client.fullName,
+      email: client.email,
+      phone: client.phone || '',
+      membershipStatus: client.membershipStatus,
+      planType: client.planType,
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (saving) return;
+    setModalOpen(false);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPagination((p) => ({ ...p, page: 1 }));
-    fetchClients();
+    if (!db?.app) return;
+    setSaving(true);
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, 'profiles', editingId), {
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone || null,
+          membershipStatus: form.membershipStatus,
+          planType: form.planType,
+        });
+      } else {
+        await addDoc(collection(db, 'profiles'), {
+          role: 'CLIENT',
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone || null,
+          membershipStatus: form.membershipStatus,
+          planType: form.planType,
+          planExpiry: null,
+          avatar: null,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      setModalOpen(false);
+      await loadClients();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to save client.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const statusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      ACTIVE: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-      INACTIVE: 'bg-red-500/10 text-red-400 border-red-500/20',
-      EXPIRED: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-      TRIAL: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    };
-    return styles[status] || 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+  const handleDelete = async (id: string) => {
+    if (!db?.app) return;
+    if (!window.confirm('Delete this client? This cannot be undone.')) return;
+    setDeletingId(id);
+    try {
+      await deleteDoc(doc(db, 'profiles', id));
+      setClients((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error(err);
+      setError('Failed to delete client.');
+    } finally {
+      setDeletingId(null);
+    }
   };
+
+  const filtered = clients.filter((c) => {
+    const term = search.toLowerCase();
+    return c.fullName.toLowerCase().includes(term) || c.email.toLowerCase().includes(term);
+  });
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-6 md:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-white">Clients</h1>
-          <p className="text-gray-400 mt-1">Manage your gym members and their profiles.</p>
+          <h1 className="text-3xl font-heading font-bold mb-1">Clients</h1>
+          <p className="text-gray-400 text-sm">{clients.length} total</p>
         </div>
-        <button className="bg-accent hover:bg-accent/90 text-white px-6 py-2.5 rounded-sm font-bold uppercase tracking-widest text-sm flex items-center gap-2 transition-colors">
-          <UserPlus size={18} />
+        <button
+          onClick={openCreateModal}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent/90 text-white text-sm font-bold uppercase tracking-widest rounded-sm transition-colors"
+        >
+          <Plus size={16} />
           Add Client
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-sm p-4 text-red-400 text-sm mb-6">
-          <strong>Error:</strong> {error}
-          <p className="mt-1 text-red-500/70">Make sure the backend server is running on port 5000.</p>
+        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-sm text-sm mb-4">
+          {error}
         </div>
       )}
 
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full sm:w-80 pl-9 pr-3 py-2 border border-white/20 rounded-sm bg-zinc-900 text-white placeholder-gray-500 focus:outline-none focus:border-accent text-sm transition-colors"
+        />
+      </div>
+
       <div className="bg-zinc-900 border border-white/10 rounded-sm overflow-hidden">
-        
-        {/* Toolbar */}
-        <div className="p-4 border-b border-white/10 flex flex-wrap gap-4 justify-between items-center bg-black/50">
-          <form onSubmit={handleSearch} className="relative w-64">
-            <input 
-              type="text" 
-              placeholder="Search clients..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black border border-white/20 rounded-sm py-2 pl-10 pr-4 text-white text-sm focus:border-accent focus:outline-none transition-colors"
-            />
-            <Search size={16} className="absolute left-3 top-2.5 text-gray-500" />
-          </form>
-
-          <div className="flex items-center gap-4">
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPagination(p => ({...p, page: 1})); }}
-              className="bg-black border border-white/20 rounded-sm py-2 px-3 text-white text-sm focus:border-accent focus:outline-none"
-            >
-              <option value="">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="TRIAL">Trial</option>
-              <option value="EXPIRED">Expired</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
-
-            <div className="text-sm text-gray-400">
-              {pagination.total} total
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-white/10 bg-black/20 text-xs uppercase tracking-widest text-gray-500">
-                <th className="p-4 font-bold">Name</th>
-                <th className="p-4 font-bold">Contact</th>
-                <th className="p-4 font-bold">Plan</th>
-                <th className="p-4 font-bold">Joined</th>
-                <th className="p-4 font-bold">Status</th>
-                <th className="p-4 font-bold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500">Loading clients...</td>
+        {loading ? (
+          <p className="text-gray-500 text-sm p-6">Loading clients...</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-gray-500 text-sm p-6">No clients found.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left text-gray-500 text-xs uppercase tracking-wider">
+                  <th className="px-5 py-3 font-medium">Name</th>
+                  <th className="px-5 py-3 font-medium">Email</th>
+                  <th className="px-5 py-3 font-medium">Phone</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Plan</th>
+                  <th className="px-5 py-3 font-medium text-right">Actions</th>
                 </tr>
-              ) : clients.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500">No clients found.</td>
-                </tr>
-              ) : (
-                clients.map((client) => (
-                  <tr key={client._id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
-                    <td className="p-4">
-                      <div className="font-bold text-white">{client.fullName}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm text-gray-300">{client.email}</div>
-                      <div className="text-xs text-gray-500">{client.phone || 'No phone'}</div>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-sm text-gray-300 font-medium">{client.planType || 'NONE'}</span>
-                    </td>
-                    <td className="p-4 text-sm text-gray-400">
-                      {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : 'Unknown'}
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-sm border ${statusBadge(client.membershipStatus)}`}>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filtered.map((client) => (
+                  <tr key={client.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-5 py-3 font-medium">{client.fullName}</td>
+                    <td className="px-5 py-3 text-gray-400">{client.email}</td>
+                    <td className="px-5 py-3 text-gray-400">{client.phone || '—'}</td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-sm font-medium ${
+                          client.membershipStatus === 'ACTIVE'
+                            ? 'bg-green-500/10 text-green-400'
+                            : client.membershipStatus === 'TRIAL'
+                            ? 'bg-blue-500/10 text-blue-400'
+                            : client.membershipStatus === 'EXPIRED'
+                            ? 'bg-red-500/10 text-red-400'
+                            : 'bg-gray-500/10 text-gray-400'
+                        }`}
+                      >
                         {client.membershipStatus}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
-                      <button className="text-gray-500 hover:text-white p-2 transition-colors">
-                        <MoreVertical size={18} />
-                      </button>
+                    <td className="px-5 py-3 text-gray-400">{client.planType}</td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openEditModal(client)}
+                          className="p-1.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-sm transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(client.id)}
+                          disabled={deletingId === client.id}
+                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-white/5 rounded-sm transition-colors disabled:opacity-50"
+                          title="Delete"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {pagination.pages > 1 && (
-          <div className="p-4 border-t border-white/10 flex items-center justify-between bg-black/30">
-            <div className="text-sm text-gray-500">
-              Page {pagination.page} of {pagination.pages}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPagination(p => ({...p, page: p.page - 1}))}
-                disabled={pagination.page <= 1}
-                className="p-2 border border-white/10 rounded-sm text-gray-400 hover:text-white hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                onClick={() => setPagination(p => ({...p, page: p.page + 1}))}
-                disabled={pagination.page >= pagination.pages}
-                className="p-2 border border-white/10 rounded-sm text-gray-400 hover:text-white hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-
       </div>
+
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={closeModal}>
+          <div
+            className="bg-zinc-900 border border-white/10 rounded-sm w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-heading font-bold">{editingId ? 'Edit Client' : 'Add Client'}</h2>
+              <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleSave}>
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={form.fullName}
+                  onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
+                  <select
+                    value={form.membershipStatus}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, membershipStatus: e.target.value as Profile['membershipStatus'] }))
+                    }
+                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="TRIAL">Trial</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="EXPIRED">Expired</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Plan</label>
+                  <select
+                    value={form.planType}
+                    onChange={(e) => setForm((f) => ({ ...f, planType: e.target.value as Profile['planType'] }))}
+                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="NONE">None</option>
+                    <option value="BASIC">Basic</option>
+                    <option value="PREMIUM">Premium</option>
+                    <option value="UNLIMITED">Unlimited</option>
+                  </select>
+                </div>
+              </div>
+
+              {!editingId && (
+                <p className="text-xs text-gray-500">
+                  This creates a client record. They'll be linked to their own login automatically once they sign up
+                  with this same email address.
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="flex-1 py-2.5 border border-white/20 text-white text-sm font-semibold rounded-sm hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 py-2.5 bg-accent hover:bg-accent/90 text-white text-sm font-bold rounded-sm transition-colors disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

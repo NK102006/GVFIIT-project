@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,17 +11,23 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-let app;
-let authInstance: any = {};
-let dbInstance: any = {};
+const isConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 
-try {
+let app: FirebaseApp | undefined;
+let auth: Auth;
+let db: Firestore;
+
+if (isConfigured) {
   app = initializeApp(firebaseConfig);
-  authInstance = getAuth(app);
-  dbInstance = getFirestore(app);
-} catch (error) {
-  console.error('Firebase initialization error. Please check your .env file!', error);
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  // Falls back to an empty mock so `auth.app` / `auth.name` checks elsewhere
+  // in the app (AuthContext, Login) can detect "Firebase not configured"
+  // without throwing during import.
+  console.warn('[firebase] Missing VITE_FIREBASE_* env vars — running in mock mode.');
+  auth = {} as Auth;
+  db = {} as Firestore;
 }
 
-export const auth = authInstance;
-export const db = dbInstance;
+export { app, auth, db };
