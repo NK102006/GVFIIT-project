@@ -13,21 +13,21 @@ export default function Home() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
-        
+
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-6xl md:text-8xl lg:text-9xl font-heading font-black text-white uppercase tracking-tighter mb-6"
           >
-            Train Hard.<br/>
+            Train Hard.<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">
               Recover Better.
             </span>
           </motion.h1>
-          
-          <motion.p 
+
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
@@ -35,8 +35,8 @@ export default function Home() {
           >
             Strength, performance and recovery — built around you.
           </motion.p>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -51,7 +51,7 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-      
+
       <About />
       <Team />
       <Programs />
