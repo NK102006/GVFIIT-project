@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -31,9 +31,19 @@ export default function Navbar() {
   };
 
   const dashboardLink = profile?.role === 'ADMIN' ? '/admin' : '/dashboard';
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10 transition-all duration-300">
+    <div className={`fixed top-0 w-full z-50 ${isLandingPage ? 'group' : ''}`}>
+      {isLandingPage && (
+        <div className="absolute top-0 w-full h-6 bg-transparent z-[-1]" />
+      )}
+      <nav 
+        className={`w-full bg-black/80 backdrop-blur-md border-b border-white/10 transition-transform duration-300 ${
+          isLandingPage && !isOpen ? '-translate-y-full group-hover:translate-y-0' : 'translate-y-0'
+        }`}
+      >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -175,5 +185,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
     </nav>
+    </div>
   );
 }
