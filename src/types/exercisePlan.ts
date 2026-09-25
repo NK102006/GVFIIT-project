@@ -1,8 +1,10 @@
 export type Exercise = {
   id: string;
   day?: string;
+  dayTitle?: string;
   name: string;
   setsReps?: string;
+  weight?: string;
   rpe?: string;
   rest?: string;
   // legacy fields
