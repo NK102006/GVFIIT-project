@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 export type Profile = {
   id: string; // Document ID (which is the firebaseUid)
@@ -11,7 +11,7 @@ export type Profile = {
   email: string;
   phone: string | null;
   membershipStatus: 'ACTIVE' | 'INACTIVE' | 'EXPIRED' | 'TRIAL';
-  planType: 'BASIC' | 'PREMIUM' | 'UNLIMITED' | 'NONE';
+  planType: 'NONE' | 'Group Training (3 Months)' | 'One to One Sessions' | 'Group Session (6 Months)';
   planExpiry: string | null;
   avatar: string | null;
 };
@@ -21,6 +21,7 @@ export type StaffRole = 'ADMIN' | 'COACH';
 export type StaffSession = {
   role: StaffRole;
   name: string;
+  coachId?: string;  // Firestore doc ID (for coach accounts only)
 };
 
 const STAFF_SESSION_KEY = 'gvfiit_staff_session';
@@ -32,7 +33,7 @@ type AuthContextType = {
   refreshProfile: () => Promise<void>;
   // Hardcoded staff (admin/coach) auth — separate from Firebase customer auth.
   staff: StaffSession | null;
-  staffLogin: (username: string, password: string) => StaffSession | null;
+  staffLogin: (username: string, password: string) => Promise<StaffSession | null>;
   staffLogout: () => void;
 };
 
@@ -42,7 +43,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   refreshProfile: async () => {},
   staff: null,
-  staffLogin: () => null,
+  staffLogin: async () => null,
   staffLogout: () => {},
 });
 
@@ -107,28 +108,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   };
 
-  // Hardcoded credential check against .env values. Intentionally does NOT
-  // touch Firebase — admin/coach are not real Firebase Auth users.
-  const staffLogin = (username: string, password: string): StaffSession | null => {
+  // Credential check: first against hardcoded admin .env values, then against
+  // Firestore 'coaches' collection for individual coach accounts.
+  const staffLogin = async (username: string, password: string): Promise<StaffSession | null> => {
     const adminUser = import.meta.env.VITE_ADMIN_USERNAME;
     const adminPass = import.meta.env.VITE_ADMIN_PASSWORD;
-    const coachUser = import.meta.env.VITE_COACH_USERNAME;
-    const coachPass = import.meta.env.VITE_COACH_PASSWORD;
 
-    let session: StaffSession | null = null;
-
+    // 1. Check hardcoded admin credentials
     if (adminUser && adminPass && username === adminUser && password === adminPass) {
-      session = { role: 'ADMIN', name: 'Admin' };
-    } else if (coachUser && coachPass && username === coachUser && password === coachPass) {
-      session = { role: 'COACH', name: 'Coach' };
-    }
-
-    if (session) {
+      const session: StaffSession = { role: 'ADMIN', name: 'Admin' };
       sessionStorage.setItem(STAFF_SESSION_KEY, JSON.stringify(session));
       setStaff(session);
+      return session;
     }
 
-    return session;
+    // 2. Check Firestore coaches collection
+    if (db?.app) {
+      try {
+        const q = query(
+          collection(db, 'coaches'),
+          where('username', '==', username.trim().toLowerCase()),
+          where('status', '==', 'ACTIVE')
+        );
+        const snap = await getDocs(q);
+        for (const d of snap.docs) {
+          const data = d.data();
+          if (data.password === password) {
+            const session: StaffSession = {
+              role: 'COACH',
+              name: data.fullName || 'Coach',
+              coachId: d.id,
+            };
+            sessionStorage.setItem(STAFF_SESSION_KEY, JSON.stringify(session));
+            setStaff(session);
+            return session;
+          }
+        }
+      } catch (err) {
+        console.error('Coach login query failed:', err);
+      }
+    }
+
+    // 3. Fallback: check hardcoded coach credentials from .env
+    const coachUser = import.meta.env.VITE_COACH_USERNAME;
+    const coachPass = import.meta.env.VITE_COACH_PASSWORD;
+    if (coachUser && coachPass && username === coachUser && password === coachPass) {
+      const session: StaffSession = { role: 'COACH', name: 'Coach' };
+      sessionStorage.setItem(STAFF_SESSION_KEY, JSON.stringify(session));
+      setStaff(session);
+      return session;
+    }
+
+    return null;
   };
 
   const staffLogout = () => {

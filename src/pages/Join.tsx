@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } f
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import GVFIITLogo from '../components/GVFIITLogo';
 
 export default function Join() {
   const [fullName, setFullName] = useState('');
@@ -111,10 +112,8 @@ export default function Join() {
       <div className="absolute top-0 left-0 w-1/2 h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <Link to="/" className="text-center block">
-          <h2 className="text-4xl font-heading font-black tracking-tighter text-white">
-            GV<span className="text-accent">FIIT</span>
-          </h2>
+        <Link to="/" className="flex justify-center">
+          <GVFIITLogo size={60} />
         </Link>
         <h2 className="mt-6 text-center text-3xl font-heading font-bold text-white tracking-tight">
           Start your journey

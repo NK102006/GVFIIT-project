@@ -1,25 +1,26 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const plans = [
   {
-    name: "BASIC",
-    duration: "1 Month",
-    price: "₹XXXX",
-    features: ["Access to gym floor", "1 InBody Assessment", "Locker access", "General gym program"],
+    name: "GROUP TRAINING",
+    duration: "3 Months (3 days a week)",
+    price: "₹17500",
+    features: ["Access to gym floor", "3 InBody Assessments", "Locker access", "1 Group Class/week", "Nutrition Guidelines"],
     highlighted: false
   },
   {
-    name: "STANDARD",
-    duration: "3 Months",
-    price: "₹XXXX",
+    name: "ONE TO ONE SESSIONS",
+    duration: "1-2 Hour",
+    price: "₹1500",
     features: ["Access to gym floor", "3 InBody Assessments", "Locker access", "1 Group Class/week", "Nutrition Guidelines"],
     highlighted: true
   },
   {
-    name: "PREMIUM",
-    duration: "6 Months",
-    price: "₹XXXX",
+    name: "GROUP SESSION",
+    duration: "6 Months (3 days a week)",
+    price: "₹31000",
     features: ["Access to gym floor", "Unlimited InBody", "Priority Locker", "Unlimited Group Classes", "Custom Diet Plan", "2 Ice Bath Sessions"],
     highlighted: false
   }
@@ -29,7 +30,7 @@ export default function Pricing() {
   return (
     <section id="membership" className="py-24 bg-black relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="text-center mb-16">
           <h2 className="text-accent text-sm font-bold uppercase tracking-widest mb-2">Memberships</h2>
           <h3 className="text-4xl md:text-5xl font-heading font-bold text-white">
@@ -39,7 +40,7 @@ export default function Pricing() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -52,13 +53,13 @@ export default function Pricing() {
                   Most Popular
                 </div>
               )}
-              
+
               <div className="text-center mb-8">
                 <h4 className="text-xl font-heading font-bold text-white mb-2">{plan.name}</h4>
                 <div className="text-sm text-gray-400 mb-6 uppercase tracking-wider">{plan.duration}</div>
                 <div className="text-5xl font-black font-heading text-white">{plan.price}</div>
               </div>
-              
+
               <div className="flex-1">
                 <ul className="space-y-4 mb-8">
                   {plan.features.map((feature, idx) => (
@@ -69,14 +70,17 @@ export default function Pricing() {
                   ))}
                 </ul>
               </div>
-              
-              <button className={`w-full py-4 rounded-sm text-sm font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${plan.highlighted ? 'bg-accent text-white hover:bg-accent/90' : 'bg-transparent border border-white/20 text-white hover:border-white'}`}>
+
+              <Link 
+                to="/join"
+                className={`block w-full py-4 text-center rounded-sm text-sm font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${plan.highlighted ? 'bg-accent text-white hover:bg-accent/90' : 'bg-transparent border border-white/20 text-white hover:border-white'}`}
+              >
                 Join Now
-              </button>
+              </Link>
             </motion.div>
           ))}
         </div>
-        
+
       </div>
     </section>
   );

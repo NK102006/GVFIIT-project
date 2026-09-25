@@ -1,29 +1,43 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { X, CheckCircle } from 'lucide-react';
 
 const programs = [
   {
-    name: "Strength Training",
-    description: "Build strength, improve performance and develop functional fitness with our periodized lifting programs.",
-    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop",
+    name: "Group Training",
+    description: "Small group sessions designed for maximum energy and results. Train 3 days a week under expert guidance.",
+    details: "Our 3-day-a-week group training sessions are perfect for those who thrive in a community setting. You'll get expert coaching on form, intensity, and progression, while pushing alongside like-minded individuals.",
+    benefits: ["Small group sizes for personal attention", "Structured 3-day split", "High-energy environment"],
+    image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop",
   },
   {
-    name: "Weight Loss",
-    description: "A combination of high-intensity intervals and metabolic conditioning to maximize fat loss.",
-    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=2070&auto=format&fit=crop",
-  },
-  {
-    name: "Hypertrophy",
-    description: "Dedicated muscle building programs focusing on time-under-tension and progressive overload.",
+    name: "One-to-One Sessions",
+    description: "Personalized 1-2 hour coaching sessions tailored entirely to your specific goals, biomechanics, and fitness level.",
+    details: "Experience the pinnacle of coaching. Every 1-2 hour session is designed specifically around your biomechanics, injury history, and goals. Perfect for those looking for rapid, highly focused progress.",
+    benefits: ["100% personalized programming", "In-depth form correction", "Flexible scheduling"],
     image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=2070&auto=format&fit=crop",
   },
   {
-    name: "Functional Fitness",
-    description: "Improve your everyday movement patterns, mobility, and core stability.",
+    name: "Sports Specific Training",
+    description: "Elite strength and conditioning programs to physically prepare and improve performance for athletes across a wide range of sports.",
+    details: "Tailored for athletes looking to gain a competitive edge. Focuses on explosive power, agility, sport-specific energy systems, and injury prevention under elite ASCA Level 2 protocols.",
+    benefits: ["Advanced athletic conditioning", "Sport-specific periodization", "Injury prevention strategies"],
     image: "https://images.unsplash.com/photo-1599058917212-d750089bc07e?q=80&w=2069&auto=format&fit=crop",
+  },
+  {
+    name: "Premium Recovery",
+    description: "Accelerate your recovery, reduce inflammation, and optimize performance with our dedicated Ice Bath therapy sessions.",
+    details: "Recovery is just as important as training. Our ice bath protocols help flush out metabolic waste, reduce delayed onset muscle soreness (DOMS), and prepare your body for the next intense session.",
+    benefits: ["Reduced inflammation", "Faster muscle recovery", "Mental resilience building"],
+    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=2070&auto=format&fit=crop",
   }
 ];
 
+type Program = typeof programs[0];
+
 export default function Programs() {
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+
   return (
     <section id="programs" className="py-24 bg-zinc-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,7 +73,10 @@ export default function Programs() {
                   {program.description}
                 </p>
                 <div className="overflow-hidden">
-                  <button className="bg-accent text-white px-6 py-2 rounded-sm text-xs font-bold uppercase tracking-widest transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-500 delay-200">
+                  <button 
+                    onClick={() => setSelectedProgram(program)}
+                    className="bg-accent text-white px-6 py-2 rounded-sm text-xs font-bold uppercase tracking-widest transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-500 delay-200"
+                  >
                     Explore Program
                   </button>
                 </div>
@@ -75,6 +92,59 @@ export default function Programs() {
         </div>
 
       </div>
+
+      <AnimatePresence>
+        {selectedProgram && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedProgram(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-zinc-900 border border-white/10 rounded-sm overflow-hidden z-10"
+            >
+              <div className="h-48 md:h-64 relative">
+                <img src={selectedProgram.image} alt={selectedProgram.name} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent" />
+                <button 
+                  onClick={() => setSelectedProgram(null)}
+                  className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black text-white rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 md:p-8 relative -mt-16">
+                <h4 className="text-3xl font-heading font-bold text-white mb-4">{selectedProgram.name}</h4>
+                <p className="text-gray-300 leading-relaxed mb-6">
+                  {selectedProgram.details}
+                </p>
+                <div className="space-y-3 mb-8">
+                  <h5 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Key Benefits</h5>
+                  {selectedProgram.benefits.map((benefit, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-gray-400 text-sm">
+                      <CheckCircle size={16} className="text-accent shrink-0" />
+                      {benefit}
+                    </div>
+                  ))}
+                </div>
+                <a 
+                  href="#membership" 
+                  onClick={() => setSelectedProgram(null)}
+                  className="inline-block w-full text-center bg-accent hover:bg-accent-hover text-white py-4 rounded-sm text-sm font-bold uppercase tracking-widest transition-colors"
+                >
+                  Join This Program
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

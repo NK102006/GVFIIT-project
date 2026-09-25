@@ -4,7 +4,9 @@ import { auth, db } from '../lib/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import GVFIITLogo from '../components/GVFIITLogo';
 
 type LoginMode = 'customer' | 'staff';
 
@@ -63,12 +65,12 @@ export default function Login() {
     }
   };
 
-  const handleStaffLogin = (e: React.FormEvent) => {
+  const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const session = staffLogin(staffUsername.trim(), staffPassword);
+    const session = await staffLogin(staffUsername.trim(), staffPassword);
 
     if (!session) {
       setError('Invalid staff username or password.');
@@ -132,11 +134,17 @@ export default function Login() {
     <div className="min-h-screen bg-black flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-1/2 h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
 
+      <Link 
+        to="/" 
+        className="absolute top-6 left-6 sm:top-8 sm:left-8 text-gray-400 hover:text-white flex items-center gap-2 transition-colors z-20 group"
+      >
+        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-bold uppercase tracking-widest hidden sm:inline-block">Back to Home</span>
+      </Link>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <Link to="/" className="text-center block">
-          <h2 className="text-4xl font-heading font-black tracking-tighter text-white">
-            GV<span className="text-accent">FIIT</span>
-          </h2>
+        <Link to="/" className="flex justify-center">
+          <GVFIITLogo size={60} />
         </Link>
         <h2 className="mt-6 text-center text-3xl font-heading font-bold text-white tracking-tight">
           Sign in to your account

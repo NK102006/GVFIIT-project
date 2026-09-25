@@ -2,7 +2,8 @@
 
 @theme {
   --color-primary: #1e1e1e;
-  --color-accent: #aa3bff;
+  --color-accent: #0f9b58;
+  --color-accent-dark: #1a3a5c;
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-heading: 'Outfit', system-ui, sans-serif;
 }

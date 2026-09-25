@@ -9,9 +9,15 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { Plus, Pencil, Trash2, X, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Search, Loader2 } from 'lucide-react';
 import { db } from '../../lib/firebase';
+import ConfirmModal from '../../components/ConfirmModal';
 import type { Profile } from '../../contexts/AuthContext';
+
+type CoachOption = {
+  id: string;
+  fullName: string;
+};
 
 type ClientFormState = {
   fullName: string;
@@ -19,6 +25,9 @@ type ClientFormState = {
   phone: string;
   membershipStatus: Profile['membershipStatus'];
   planType: Profile['planType'];
+  planStart: string;
+  planExpiry: string;
+  assignedCoachId: string;
 };
 
 const emptyForm: ClientFormState = {
@@ -27,10 +36,14 @@ const emptyForm: ClientFormState = {
   phone: '',
   membershipStatus: 'TRIAL',
   planType: 'NONE',
+  planStart: '',
+  planExpiry: '',
+  assignedCoachId: '',
 };
 
 export default function Clients() {
   const [clients, setClients] = useState<Profile[]>([]);
+  const [coaches, setCoaches] = useState<CoachOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -40,6 +53,7 @@ export default function Clients() {
   const [form, setForm] = useState<ClientFormState>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const loadClients = async () => {
     if (!db?.app) {
@@ -49,9 +63,15 @@ export default function Clients() {
     }
     setLoading(true);
     try {
-      const q = query(collection(db, 'profiles'), where('role', '==', 'CLIENT'));
-      const snap = await getDocs(q);
-      setClients(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Profile)));
+      const [clientsSnap, coachesSnap] = await Promise.all([
+        getDocs(query(collection(db, 'profiles'), where('role', '==', 'CLIENT'))),
+        getDocs(collection(db, 'coaches')),
+      ]);
+      setClients(clientsSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Profile)));
+      setCoaches(
+        coachesSnap.docs
+          .map((d) => ({ id: d.id, fullName: d.data().fullName } as CoachOption))
+      );
       setError(null);
     } catch (err) {
       console.error(err);
@@ -71,7 +91,7 @@ export default function Clients() {
     setModalOpen(true);
   };
 
-  const openEditModal = (client: Profile) => {
+  const openEditModal = (client: Profile & { planStart?: string; assignedCoachId?: string }) => {
     setEditingId(client.id);
     setForm({
       fullName: client.fullName,
@@ -79,6 +99,9 @@ export default function Clients() {
       phone: client.phone || '',
       membershipStatus: client.membershipStatus,
       planType: client.planType,
+      planStart: client.planStart || '',
+      planExpiry: client.planExpiry || '',
+      assignedCoachId: client.assignedCoachId || '',
     });
     setModalOpen(true);
   };
@@ -92,6 +115,7 @@ export default function Clients() {
     e.preventDefault();
     if (!db?.app) return;
     setSaving(true);
+    const selectedCoach = coaches.find((c) => c.id === form.assignedCoachId);
     try {
       if (editingId) {
         await updateDoc(doc(db, 'profiles', editingId), {
@@ -100,6 +124,10 @@ export default function Clients() {
           phone: form.phone || null,
           membershipStatus: form.membershipStatus,
           planType: form.planType,
+          planStart: form.planStart || null,
+          planExpiry: form.planExpiry || null,
+          assignedCoachId: form.assignedCoachId || null,
+          assignedCoachName: selectedCoach?.fullName || null,
         });
       } else {
         await addDoc(collection(db, 'profiles'), {
@@ -109,7 +137,10 @@ export default function Clients() {
           phone: form.phone || null,
           membershipStatus: form.membershipStatus,
           planType: form.planType,
-          planExpiry: null,
+          planStart: form.planStart || null,
+          planExpiry: form.planExpiry || null,
+          assignedCoachId: form.assignedCoachId || null,
+          assignedCoachName: selectedCoach?.fullName || null,
           avatar: null,
           createdAt: new Date().toISOString(),
         });
@@ -124,18 +155,23 @@ export default function Clients() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!db?.app) return;
-    if (!window.confirm('Delete this client? This cannot be undone.')) return;
-    setDeletingId(id);
+    setConfirmDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    setDeletingId(confirmDeleteId);
     try {
-      await deleteDoc(doc(db, 'profiles', id));
-      setClients((prev) => prev.filter((c) => c.id !== id));
+      await deleteDoc(doc(db, 'profiles', confirmDeleteId));
+      setClients((prev) => prev.filter((c) => c.id !== confirmDeleteId));
     } catch (err) {
       console.error(err);
       setError('Failed to delete client.');
     } finally {
       setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -191,12 +227,18 @@ export default function Clients() {
                   <th className="px-5 py-3 font-medium">Email</th>
                   <th className="px-5 py-3 font-medium">Phone</th>
                   <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium">Plan</th>
+                  <th className="px-5 py-3 font-medium">Coach</th>
+                  <th className="px-5 py-3 font-medium">Plan Period</th>
                   <th className="px-5 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filtered.map((client) => (
+                {filtered.map((client) => {
+                  const data = client as Profile & { planStart?: string; planExpiry?: string; assignedCoachName?: string };
+                  const startStr = data.planStart ? new Date(data.planStart).toLocaleDateString() : null;
+                  const endStr = data.planExpiry ? new Date(data.planExpiry).toLocaleDateString() : null;
+                  const planLabel = startStr && endStr ? `${startStr} – ${endStr}` : startStr ? `From ${startStr}` : endStr ? `Until ${endStr}` : '—';
+                  return (
                   <tr key={client.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-5 py-3 font-medium">{client.fullName}</td>
                     <td className="px-5 py-3 text-gray-400">{client.email}</td>
@@ -216,7 +258,8 @@ export default function Clients() {
                         {client.membershipStatus}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-gray-400">{client.planType}</td>
+                    <td className="px-5 py-3 text-gray-400 text-xs">{data.assignedCoachName || '—'}</td>
+                    <td className="px-5 py-3 text-gray-400 text-xs">{planLabel}</td>
                     <td className="px-5 py-3">
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -237,7 +280,8 @@ export default function Clients() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -284,41 +328,88 @@ export default function Clients() {
                 <label className="block text-xs font-medium text-gray-400 mb-1">Phone</label>
                 <input
                   type="tel"
+                  required
                   value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
+                <select
+                  value={form.membershipStatus}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, membershipStatus: e.target.value as Profile['membershipStatus'] }))
+                  }
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                >
+                  <option value="TRIAL">Trial</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                  <option value="EXPIRED">Expired</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Plan / Package</label>
+                <select
+                  value={form.planType}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, planType: e.target.value as Profile['planType'] }))
+                  }
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                >
+                  <option value="NONE">None</option>
+                  <option value="Group Training (3 Months)">Group Training (3 Months)</option>
+                  <option value="One to One Sessions">One to One Sessions</option>
+                  <option value="Group Session (6 Months)">Group Session (6 Months)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Assigned Coach</label>
+                <select
+                  value={form.assignedCoachId}
+                  onChange={(e) => setForm((f) => ({ ...f, assignedCoachId: e.target.value }))}
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
+                >
+                  <option value="">No coach assigned</option>
+                  {coaches.map((c) => (
+                    <option key={c.id} value={c.id}>{c.fullName}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
-                  <select
-                    value={form.membershipStatus}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, membershipStatus: e.target.value as Profile['membershipStatus'] }))
-                    }
-                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
-                  >
-                    <option value="TRIAL">Trial</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
-                    <option value="EXPIRED">Expired</option>
-                  </select>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Plan Start Date</label>
+                  <input
+                    type="date"
+                    value={form.planStart}
+                    max={form.planExpiry || undefined}
+                    onChange={(e) => {
+                      const newStart = e.target.value;
+                      setForm((f) => ({
+                        ...f,
+                        planStart: newStart,
+                        // Clear end date if it's now before the new start date
+                        planExpiry: f.planExpiry && f.planExpiry < newStart ? '' : f.planExpiry,
+                      }));
+                    }}
+                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Plan</label>
-                  <select
-                    value={form.planType}
-                    onChange={(e) => setForm((f) => ({ ...f, planType: e.target.value as Profile['planType'] }))}
-                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
-                  >
-                    <option value="NONE">None</option>
-                    <option value="BASIC">Basic</option>
-                    <option value="PREMIUM">Premium</option>
-                    <option value="UNLIMITED">Unlimited</option>
-                  </select>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Plan End Date</label>
+                  <input
+                    type="date"
+                    value={form.planExpiry}
+                    min={form.planStart || undefined}
+                    onChange={(e) => setForm((f) => ({ ...f, planExpiry: e.target.value }))}
+                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+                  />
                 </div>
               </div>
 
@@ -342,13 +433,22 @@ export default function Clients() {
                   disabled={saving}
                   className="flex-1 py-2.5 bg-accent hover:bg-accent/90 text-white text-sm font-bold rounded-sm transition-colors disabled:opacity-50"
                 >
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? <><Loader2 size={16} className="animate-spin inline mr-2"/>Saving...</> : 'Save'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Delete Client"
+        message="Are you sure you want to delete this client? This cannot be undone."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }

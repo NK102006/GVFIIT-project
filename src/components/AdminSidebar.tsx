@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Users, CreditCard, Calendar, Activity, ClipboardList, Settings, LogOut, Snowflake, Dumbbell, BarChart3 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
+import GVFIITLogo from './GVFIITLogo';
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
@@ -31,9 +32,10 @@ export default function AdminSidebar() {
   return (
     <div className="w-64 bg-zinc-950 border-r border-white/10 h-screen flex flex-col fixed left-0 top-0">
       <div className="p-6 border-b border-white/10">
-        <h2 className="text-2xl font-heading font-black tracking-tighter text-white">
-          GV<span className="text-accent">FIIT</span> <span className="text-xs font-sans text-gray-500 uppercase tracking-widest ml-1">Admin</span>
-        </h2>
+        <div className="flex items-center gap-3">
+          <GVFIITLogo size={36} />
+          <span className="text-xs font-sans text-gray-500 uppercase tracking-widest">Admin</span>
+        </div>
       </div>
       
       <div className="flex-1 py-6 flex flex-col gap-1 px-3 overflow-y-auto">

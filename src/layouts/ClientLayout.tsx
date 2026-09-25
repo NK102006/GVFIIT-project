@@ -7,11 +7,13 @@ import {
   Activity, 
   Dumbbell, 
   LogOut,
-  Menu
+  Menu,
+  Snowflake
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
+import GVFIITLogo from '../components/GVFIITLogo';
 
 export default function ClientLayout() {
   const { profile } = useAuth();
@@ -23,6 +25,7 @@ export default function ClientLayout() {
     { name: 'Schedule & Bookings', href: '/dashboard/schedule', icon: Calendar },
     { name: 'Fitness Metrics', href: '/dashboard/metrics', icon: Activity },
     { name: 'My Programs', href: '/dashboard/programs', icon: Dumbbell },
+    { name: 'Ice Bath', href: '/dashboard/ice-bath', icon: Snowflake },
   ];
 
   const handleLogout = async () => {
@@ -36,8 +39,8 @@ export default function ClientLayout() {
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-zinc-950 border-r border-white/10">
       <div className="flex h-20 shrink-0 items-center px-6 border-b border-white/10">
-        <Link to="/" className="text-2xl font-heading font-black tracking-tighter text-white">
-          GV<span className="text-accent">FIIT</span>
+        <Link to="/" className="flex items-center">
+          <GVFIITLogo size={40} />
         </Link>
       </div>
       

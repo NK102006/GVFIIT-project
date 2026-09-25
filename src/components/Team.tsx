@@ -1,33 +1,50 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
 const founder = {
-  name: "Gaurav Verma",
+  name: "Gaurav D Vaghela",
   role: "Founder & Head Coach",
-  image: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?q=80&w=1974&auto=format&fit=crop",
-  bio: "[Placeholder] With over a decade of experience in strength and conditioning, Gaurav founded GV FIIT to create a space where athletic performance meets premium recovery. He specializes in functional hypertrophy and sports-specific training.",
-  certs: ["Certified Strength & Conditioning Specialist (CSCS)", "Precision Nutrition L1"]
+  image: "/images/gaurav.jpg",
+  bio: [
+    "As an Ex-National player and certified ASCA Coach, Gaurav brings a unique blend of athletic excellence and strategic vision to his coaching. Holding a CMA and an MBA in Finance, his disciplined approach translates directly into his training methodologies.",
+    "He is a BCCI Level 1 Umpire and the Promoter of the Pooja Institute of Sports Research and Development, an NGO based at Dharoi focused on advancing sports.",
+    "A driven sports entrepreneur, Gaurav is the Founder of GV FIIT and the Co-founder of both DNA Sports and GNV Fitness Studio.",
+    "\"Dreams become milestones when dedication meets opportunity. 🏆\"",
+    "Proud and grateful to have been awarded 1st Prize in the Undergraduate Category – Industry Impact Challenge at the STESSA 2026 International Conference. A milestone to remember. A journey to continue."
+  ],
+  certs: ["ASCA Associate L2 Strength & Conditioning Coach"]
 };
 
 const coaches = [
   {
-    name: "Rahul Sharma",
-    role: "Senior Performance Coach",
-    image: "https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=1974&auto=format&fit=crop",
-    specialization: "Olympic Weightlifting, Mobility"
-  },
-  {
-    name: "Priya Desai",
-    role: "Fitness Specialist",
-    image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop",
-    specialization: "HIIT, Functional Core"
+    name: "Soham Goyal",
+    role: "Coach",
+    image: "/images/soham.jpg",
+    specialization: "Strength & Conditioning",
+    experience: [
+      "Professional Cricketer | Top-Order Batsman",
+      "All-India University Cricketer & Softball Player",
+      "Gujarat Cricket Association U-19 Probables",
+      "Strength & Conditioning Coach — GV FIIT",
+      "Head Strength & Conditioning Coach — Kickora Sports Academy",
+      "Athlete Performance & Injury Prevention Specialist"
+    ],
+    certificates: [
+      "ASCA Level 1 Coach"
+    ],
+    certLink: "/images/Soham_certificate_pages.png",
+    certName: "ASCA Certificate"
   }
 ];
 
 export default function Team() {
+  const [selectedCoach, setSelectedCoach] = useState<typeof coaches[0] | null>(null);
+
   return (
     <section id="coaches" className="py-24 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="text-center mb-16">
           <h2 className="text-accent text-sm font-bold uppercase tracking-widest mb-2">Our Team</h2>
           <h3 className="text-4xl md:text-5xl font-heading font-bold text-white">
@@ -36,7 +53,7 @@ export default function Team() {
         </div>
 
         {/* Founder Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -49,9 +66,11 @@ export default function Team() {
             <div className="p-8 md:p-12 flex flex-col justify-center">
               <div className="text-accent text-sm font-bold uppercase tracking-widest mb-1">{founder.role}</div>
               <h4 className="text-3xl font-heading font-bold text-white mb-4">{founder.name}</h4>
-              <p className="text-gray-400 mb-6 leading-relaxed">
-                {founder.bio}
-              </p>
+              <div className="text-gray-400 mb-6 leading-relaxed space-y-4">
+                {founder.bio.map((paragraph, index) => (
+                  <p key={index} className="whitespace-pre-line">{paragraph}</p>
+                ))}
+              </div>
               <div className="mb-8">
                 <div className="text-white text-sm font-semibold uppercase tracking-wider mb-2">Certifications</div>
                 <ul className="space-y-1">
@@ -63,9 +82,14 @@ export default function Team() {
                 </ul>
               </div>
               <div>
-                <button className="border border-white/20 hover:border-accent hover:text-accent text-white px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-all">
-                  View Profile
-                </button>
+                <a
+                  href="/images/asca-certificate.jpg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block border border-white/20 hover:border-accent hover:text-accent text-white px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-all"
+                >
+                  ASCA Certificate
+                </a>
               </div>
             </div>
           </div>
@@ -74,7 +98,7 @@ export default function Team() {
         {/* Coaches Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {coaches.map((coach, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -84,22 +108,115 @@ export default function Team() {
             >
               <img src={coach.image} alt={coach.name} className="w-full h-full object-cover grayscale opacity-70 group-hover:scale-105 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80" />
-              
+
               <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                 <div className="text-accent text-xs font-bold uppercase tracking-widest mb-1">{coach.role}</div>
                 <h4 className="text-2xl font-heading font-bold text-white mb-2">{coach.name}</h4>
                 <p className="text-gray-300 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
                   Specialization: {coach.specialization}
                 </p>
-                <button className="opacity-0 group-hover:opacity-100 text-white text-sm font-bold uppercase tracking-widest border-b border-accent pb-1 transition-all duration-500 delay-200 hover:text-accent">
+                <button 
+                  onClick={() => setSelectedCoach(coach)}
+                  className="opacity-0 group-hover:opacity-100 text-white text-sm font-bold uppercase tracking-widest border-b border-accent pb-1 transition-all duration-500 delay-200 hover:text-accent"
+                >
                   View Profile
                 </button>
               </div>
             </motion.div>
           ))}
         </div>
-        
+
       </div>
+
+      {/* Coach Profile Modal */}
+      <AnimatePresence>
+        {selectedCoach && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedCoach(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-zinc-900 border border-white/10 rounded-sm overflow-hidden shadow-2xl z-10 max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setSelectedCoach(null)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors z-20"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-6">
+                <div className="sm:col-span-2 h-64 sm:h-full relative">
+                  <img 
+                    src={selectedCoach.image} 
+                    alt={selectedCoach.name} 
+                    className="w-full h-full object-cover grayscale"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent sm:bg-gradient-to-r" />
+                </div>
+                
+                <div className="sm:col-span-3 p-6 sm:p-8 sm:pl-0 flex flex-col justify-center">
+                  <div className="text-accent text-sm font-bold uppercase tracking-widest mb-1">
+                    {selectedCoach.role}
+                  </div>
+                  <h3 className="text-3xl font-heading font-bold text-white mb-6">
+                    {selectedCoach.name}
+                  </h3>
+                  
+                  {selectedCoach.experience && selectedCoach.experience.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-3">Experience</h4>
+                      <ul className="space-y-2">
+                        {selectedCoach.experience.map((exp, idx) => (
+                          <li key={idx} className="text-gray-400 text-sm flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 shrink-0" /> 
+                            <span>{exp}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {selectedCoach.certificates && selectedCoach.certificates.length > 0 && (
+                    <div className={selectedCoach.certLink ? "mb-6" : ""}>
+                      <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-3">Certifications</h4>
+                      <ul className="space-y-2">
+                        {selectedCoach.certificates.map((cert, idx) => (
+                          <li key={idx} className="text-gray-400 text-sm flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 shrink-0" /> 
+                            <span>{cert}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {selectedCoach.certLink && (
+                    <div>
+                      <a
+                        href={selectedCoach.certLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block border border-white/20 hover:border-accent hover:text-accent text-white px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-all"
+                      >
+                        {selectedCoach.certName || "View Certificate"}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

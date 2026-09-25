@@ -7,12 +7,24 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Clients from './pages/admin/Clients';
+import Coaches from './pages/admin/Coaches';
+import Slots from './pages/admin/Slots';
+import AdminSchedule from './pages/admin/AdminSchedule';
+import IceBathAdmin from './pages/admin/IceBath';
+import Attendance from './pages/admin/Attendance';
+import Payments from './pages/admin/Payments';
 import CoachLayout from './layouts/CoachLayout';
 import CoachOverview from './pages/coach/CoachOverview';
 import CoachClients from './pages/coach/CoachClients';
 import ClientPlan from './pages/coach/ClientPlan';
+import CoachAttendance from './pages/coach/CoachAttendance';
+import CoachSchedule from './pages/coach/CoachSchedule';
 import ClientLayout from './layouts/ClientLayout';
 import Overview from './pages/dashboard/Overview';
+import IceBathClient from './pages/dashboard/IceBathBooking';
+import MyPrograms from './pages/dashboard/MyPrograms';
+import ClientMetrics from './pages/dashboard/ClientMetrics';
+import ScheduleBooking from './pages/dashboard/ScheduleBooking';
 import { useEffect } from 'react';
 
 // Simple protected route wrapper for clients
@@ -95,9 +107,10 @@ function AppRoutes() {
         }
       >
         <Route index element={<Overview />} />
-        <Route path="schedule" element={<div className="p-8 text-white"><h1 className="text-3xl font-heading font-bold mb-4">Schedule & Bookings</h1><p className="text-gray-400">Coming soon...</p></div>} />
-        <Route path="metrics" element={<div className="p-8 text-white"><h1 className="text-3xl font-heading font-bold mb-4">Fitness Metrics</h1><p className="text-gray-400">Coming soon...</p></div>} />
-        <Route path="programs" element={<div className="p-8 text-white"><h1 className="text-3xl font-heading font-bold mb-4">My Programs</h1><p className="text-gray-400">Coming soon...</p></div>} />
+        <Route path="schedule" element={<ScheduleBooking />} />
+        <Route path="metrics" element={<ClientMetrics />} />
+        <Route path="programs" element={<MyPrograms />} />
+        <Route path="ice-bath" element={<IceBathClient />} />
       </Route>
 
       {/* Admin Routes */}
@@ -111,6 +124,12 @@ function AppRoutes() {
       >
         <Route index element={<AdminDashboard />} />
         <Route path="clients" element={<Clients />} />
+        <Route path="coaches" element={<Coaches />} />
+        <Route path="slots" element={<Slots />} />
+        <Route path="schedule" element={<AdminSchedule />} />
+        <Route path="ice-bath" element={<IceBathAdmin />} />
+        <Route path="attendance" element={<Attendance />} />
+        <Route path="payments" element={<Payments />} />
         <Route path="*" element={<div className="p-8 text-white">Module coming soon...</div>} />
       </Route>
 
@@ -126,6 +145,8 @@ function AppRoutes() {
         <Route index element={<CoachOverview />} />
         <Route path="clients" element={<CoachClients />} />
         <Route path="clients/:clientId" element={<ClientPlan />} />
+        <Route path="attendance" element={<CoachAttendance />} />
+        <Route path="schedule" element={<CoachSchedule />} />
         <Route path="*" element={<div className="p-8 text-white">Module coming soon...</div>} />
       </Route>
     </Routes>

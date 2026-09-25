@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import GVFIITLogo from './GVFIITLogo';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 
@@ -37,8 +38,8 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="text-3xl font-heading font-black tracking-tighter text-white">
-              GV<span className="text-accent">FIIT</span>
+            <Link to="/" className="flex items-center">
+              <GVFIITLogo size={40} />
             </Link>
           </div>
 
@@ -55,7 +56,7 @@ export default function Navbar() {
                 </a>
               ))}
             </div>
-            
+
             <div className="flex items-center space-x-4 border-l border-white/20 pl-6">
               {user ? (
                 <>
@@ -126,7 +127,7 @@ export default function Navbar() {
                   {link.name}
                 </a>
               ))}
-              
+
               <div className="pt-4 mt-2 border-t border-white/10 flex flex-col space-y-4">
                 {user ? (
                   <>

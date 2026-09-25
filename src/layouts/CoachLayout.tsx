@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardCheck, Calendar, LogOut, Menu, X } from 'lucide-react';
 import { useAuth, fullLogout } from '../contexts/AuthContext';
+import GVFIITLogo from '../components/GVFIITLogo';
 
 const navItems = [
   { to: '/coach', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/coach/schedule', label: 'Schedule', icon: Calendar, end: false },
   { to: '/coach/clients', label: 'My Clients', icon: Users, end: false },
+  { to: '/coach/attendance', label: 'Attendance', icon: ClipboardCheck, end: false },
 ];
 
 export default function CoachLayout() {
@@ -22,8 +25,9 @@ export default function CoachLayout() {
     <div className="h-screen bg-black text-white flex overflow-hidden">
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-zinc-900 border-b border-white/10 flex items-center justify-between px-4 z-30">
-        <Link to="/coach" className="font-heading font-black tracking-tighter text-lg">
-          GV<span className="text-accent">FIIT</span> <span className="text-gray-500 text-xs font-normal">Coach</span>
+        <Link to="/coach" className="flex items-center gap-2">
+          <GVFIITLogo size={32} />
+          <span className="text-gray-500 text-xs font-normal">Coach</span>
         </Link>
         <button onClick={() => setMobileOpen((v) => !v)} className="text-white">
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -38,8 +42,8 @@ export default function CoachLayout() {
         }`}
       >
         <div className="hidden md:block px-6 py-6 border-b border-white/10">
-          <Link to="/coach" className="font-heading font-black tracking-tighter text-xl">
-            GV<span className="text-accent">FIIT</span>
+          <Link to="/coach" className="flex items-center gap-3">
+            <GVFIITLogo size={40} />
           </Link>
           <p className="text-xs text-gray-500 mt-1 tracking-widest uppercase">Coach</p>
         </div>
