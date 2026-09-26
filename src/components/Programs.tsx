@@ -39,17 +39,17 @@ export default function Programs() {
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 
   return (
-    <section id="programs" className="py-24 bg-zinc-950">
+    <section id="programs" className="py-24" style={{ backgroundColor: '#EDE5D4' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div>
-            <h2 className="text-accent text-sm font-bold uppercase tracking-widest mb-2">Our Programs</h2>
-            <h3 className="text-4xl md:text-5xl font-heading font-bold text-white">
+            <h2 className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: '#B89B5E' }}>Our Programs</h2>
+            <h3 className="text-4xl md:text-5xl font-heading font-bold" style={{ color: '#1E2924' }}>
               ENGINEERED FOR RESULTS
             </h3>
           </div>
-          <button className="hidden md:block border-b border-accent text-white hover:text-accent pb-1 font-bold tracking-widest uppercase transition-colors">
+          <button className="hidden md:block pb-1 font-bold tracking-widest uppercase transition-colors" style={{ color: '#315C4A', borderBottom: '1px solid #315C4A' }}>
             View All Programs
           </button>
         </div>
@@ -62,20 +62,22 @@ export default function Programs() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="group relative overflow-hidden rounded-sm aspect-[16/9] md:aspect-[4/3] lg:aspect-[16/9] bg-zinc-900"
+              className="group relative overflow-hidden rounded-sm aspect-[16/9] md:aspect-[4/3] lg:aspect-[16/9]"
+              style={{ backgroundColor: '#EDE5D4' }}
             >
-              <img src={program.image} alt={program.name} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
+              <img src={program.image} alt={program.name} className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               
               <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <h4 className="text-2xl font-heading font-bold text-white mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{program.name}</h4>
-                <p className="text-gray-300 text-sm mb-6 opacity-0 h-0 group-hover:h-auto group-hover:opacity-100 transition-all duration-500 delay-100">
+                <h4 className="text-2xl font-heading font-bold mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500" style={{ color: '#FFFFFF' }}>{program.name}</h4>
+                <p className="text-sm mb-6 opacity-0 h-0 group-hover:h-auto group-hover:opacity-100 transition-all duration-500 delay-100" style={{ color: '#D1D5DB' }}>
                   {program.description}
                 </p>
                 <div className="overflow-hidden">
                   <button 
                     onClick={() => setSelectedProgram(program)}
-                    className="bg-accent text-white px-6 py-2 rounded-sm text-xs font-bold uppercase tracking-widest transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-500 delay-200"
+                    className="px-6 py-2 rounded-sm text-xs font-bold uppercase tracking-widest transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-500 delay-200"
+                    style={{ backgroundColor: '#315C4A', color: '#FAF7F0' }}
                   >
                     Explore Program
                   </button>
@@ -86,7 +88,7 @@ export default function Programs() {
         </div>
         
         <div className="mt-8 text-center md:hidden">
-          <button className="border-b border-accent text-white hover:text-accent pb-1 font-bold tracking-widest uppercase transition-colors">
+          <button className="pb-1 font-bold tracking-widest uppercase transition-colors" style={{ color: '#315C4A', borderBottom: '1px solid #315C4A' }}>
             View All Programs
           </button>
         </div>
@@ -101,34 +103,40 @@ export default function Programs() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedProgram(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+              className="absolute inset-0 backdrop-blur-sm cursor-pointer"
+              style={{ backgroundColor: 'rgba(30, 41, 36, 0.7)' }}
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-zinc-900 border border-white/10 rounded-sm overflow-hidden z-10"
+              className="relative w-full max-w-2xl rounded-sm overflow-hidden z-10"
+              style={{ 
+                backgroundColor: '#FAF7F0', 
+                border: '1px solid rgba(49, 92, 74, 0.15)' 
+              }}
             >
               <div className="h-48 md:h-64 relative">
                 <img src={selectedProgram.image} alt={selectedProgram.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent" />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #FAF7F0, transparent)' }} />
                 <button 
                   onClick={() => setSelectedProgram(null)}
-                  className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black text-white rounded-full transition-colors"
+                  className="absolute top-4 right-4 p-2 rounded-full transition-colors"
+                  style={{ backgroundColor: 'rgba(30, 41, 36, 0.5)', color: '#FFFFFF' }}
                 >
                   <X size={20} />
                 </button>
               </div>
               <div className="p-6 md:p-8 relative -mt-16">
-                <h4 className="text-3xl font-heading font-bold text-white mb-4">{selectedProgram.name}</h4>
-                <p className="text-gray-300 leading-relaxed mb-6">
+                <h4 className="text-3xl font-heading font-bold mb-4" style={{ color: '#1E2924' }}>{selectedProgram.name}</h4>
+                <p className="leading-relaxed mb-6" style={{ color: '#4A5548' }}>
                   {selectedProgram.details}
                 </p>
                 <div className="space-y-3 mb-8">
-                  <h5 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Key Benefits</h5>
+                  <h5 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: '#1E2924' }}>Key Benefits</h5>
                   {selectedProgram.benefits.map((benefit, idx) => (
-                    <div key={idx} className="flex items-center gap-3 text-gray-400 text-sm">
-                      <CheckCircle size={16} className="text-accent shrink-0" />
+                    <div key={idx} className="flex items-center gap-3 text-sm" style={{ color: '#4A5548' }}>
+                      <CheckCircle size={16} className="shrink-0" style={{ color: '#315C4A' }} />
                       {benefit}
                     </div>
                   ))}
@@ -136,7 +144,8 @@ export default function Programs() {
                 <a 
                   href="#membership" 
                   onClick={() => setSelectedProgram(null)}
-                  className="inline-block w-full text-center bg-accent hover:bg-accent-hover text-white py-4 rounded-sm text-sm font-bold uppercase tracking-widest transition-colors"
+                  className="inline-block w-full text-center py-4 rounded-sm text-sm font-bold uppercase tracking-widest transition-all hover:scale-[1.02]"
+                  style={{ backgroundColor: '#315C4A', color: '#FAF7F0' }}
                 >
                   Join This Program
                 </a>

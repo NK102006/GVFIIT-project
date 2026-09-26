@@ -19,7 +19,8 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-6xl md:text-8xl lg:text-9xl font-heading font-black text-white uppercase tracking-tighter mb-6"
+            className="text-6xl md:text-8xl lg:text-9xl font-heading font-black uppercase tracking-tighter mb-6"
+            style={{ color: '#FFFFFF' }}
           >
             Train Hard.<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-500">
@@ -31,7 +32,8 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="text-xl md:text-2xl text-gray-300 font-light mb-10 max-w-2xl mx-auto"
+            className="text-xl md:text-2xl font-light mb-10 max-w-2xl mx-auto"
+            style={{ color: '#D1D5DB' }}
           >
             Strength, performance and recovery — built around you.
           </motion.p>
@@ -42,10 +44,18 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <button className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95">
+            <button 
+              className="bg-accent hover:bg-accent/90 px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+              style={{ color: '#FAF7F0' }}
+            >
               Join GV FIIT
             </button>
-            <button className="bg-transparent border-2 border-white hover:bg-white hover:text-black text-white px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all">
+            <button 
+              className="bg-transparent border-2 hover:text-black px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all"
+              style={{ color: '#FFFFFF', borderColor: '#FFFFFF' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#1E2924'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
+            >
               Book A Session
             </button>
           </motion.div>

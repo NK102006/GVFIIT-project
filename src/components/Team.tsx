@@ -42,12 +42,12 @@ export default function Team() {
   const [selectedCoach, setSelectedCoach] = useState<typeof coaches[0] | null>(null);
 
   return (
-    <section id="coaches" className="py-24 bg-black">
+    <section id="coaches" className="py-24" style={{ backgroundColor: '#F3EBDD' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="text-center mb-16">
-          <h2 className="text-accent text-sm font-bold uppercase tracking-widest mb-2">Our Team</h2>
-          <h3 className="text-4xl md:text-5xl font-heading font-bold text-white">
+          <h2 className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: '#B89B5E' }}>Our Team</h2>
+          <h3 className="text-4xl md:text-5xl font-heading font-bold" style={{ color: '#1E2924' }}>
             TRAIN WITH THE BEST
           </h3>
         </div>
@@ -57,26 +57,31 @@ export default function Team() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-zinc-900 border border-white/5 rounded-sm overflow-hidden mb-16"
+          className="rounded-sm overflow-hidden mb-16"
+          style={{ 
+            backgroundColor: '#FAF7F0', 
+            border: '1px solid rgba(49, 92, 74, 0.1)',
+            boxShadow: '0 4px 20px rgba(30, 41, 36, 0.06)'
+          }}
         >
           <div className="grid grid-cols-1 md:grid-cols-2">
             <div className="h-[400px] md:h-auto">
-              <img src={founder.image} alt={founder.name} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+              <img src={founder.image} alt={founder.name} className="w-full h-full object-cover hover:scale-105 transition-all duration-500" />
             </div>
             <div className="p-8 md:p-12 flex flex-col justify-center">
-              <div className="text-accent text-sm font-bold uppercase tracking-widest mb-1">{founder.role}</div>
-              <h4 className="text-3xl font-heading font-bold text-white mb-4">{founder.name}</h4>
-              <div className="text-gray-400 mb-6 leading-relaxed space-y-4">
+              <div className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: '#B89B5E' }}>{founder.role}</div>
+              <h4 className="text-3xl font-heading font-bold mb-4" style={{ color: '#1E2924' }}>{founder.name}</h4>
+              <div className="mb-6 leading-relaxed space-y-4" style={{ color: '#4A5548' }}>
                 {founder.bio.map((paragraph, index) => (
                   <p key={index} className="whitespace-pre-line">{paragraph}</p>
                 ))}
               </div>
               <div className="mb-8">
-                <div className="text-white text-sm font-semibold uppercase tracking-wider mb-2">Certifications</div>
+                <div className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: '#1E2924' }}>Certifications</div>
                 <ul className="space-y-1">
                   {founder.certs.map((cert, idx) => (
-                    <li key={idx} className="text-gray-500 text-sm flex items-center gap-2">
-                      <div className="w-1 h-1 bg-accent rounded-full" /> {cert}
+                    <li key={idx} className="text-sm flex items-center gap-2" style={{ color: '#6F716A' }}>
+                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: '#B89B5E' }} /> {cert}
                     </li>
                   ))}
                 </ul>
@@ -86,7 +91,11 @@ export default function Team() {
                   href="/images/asca-certificate.jpg"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block border border-white/20 hover:border-accent hover:text-accent text-white px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-all"
+                  className="inline-block px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-all hover:scale-105"
+                  style={{ 
+                    border: '1px solid rgba(49, 92, 74, 0.3)',
+                    color: '#315C4A'
+                  }}
                 >
                   ASCA Certificate
                 </a>
@@ -104,20 +113,22 @@ export default function Team() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
-              className="group relative overflow-hidden rounded-sm aspect-[4/5] bg-zinc-900"
+              className="group relative overflow-hidden rounded-sm aspect-[4/5]"
+              style={{ backgroundColor: '#EDE5D4' }}
             >
-              <img src={coach.image} alt={coach.name} className="w-full h-full object-cover grayscale opacity-70 group-hover:scale-105 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" />
+              <img src={coach.image} alt={coach.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80" />
 
               <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                <div className="text-accent text-xs font-bold uppercase tracking-widest mb-1">{coach.role}</div>
-                <h4 className="text-2xl font-heading font-bold text-white mb-2">{coach.name}</h4>
-                <p className="text-gray-300 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#B89B5E' }}>{coach.role}</div>
+                <h4 className="text-2xl font-heading font-bold mb-2" style={{ color: '#FFFFFF' }}>{coach.name}</h4>
+                <p className="text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100" style={{ color: '#D1D5DB' }}>
                   Specialization: {coach.specialization}
                 </p>
                 <button 
                   onClick={() => setSelectedCoach(coach)}
-                  className="opacity-0 group-hover:opacity-100 text-white text-sm font-bold uppercase tracking-widest border-b border-accent pb-1 transition-all duration-500 delay-200 hover:text-accent"
+                  className="opacity-0 group-hover:opacity-100 text-sm font-bold uppercase tracking-widest pb-1 transition-all duration-500 delay-200"
+                  style={{ color: '#FFFFFF', borderBottom: '1px solid #B89B5E' }}
                 >
                   View Profile
                 </button>
@@ -137,18 +148,24 @@ export default function Team() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedCoach(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className="absolute inset-0 backdrop-blur-sm"
+              style={{ backgroundColor: 'rgba(30, 41, 36, 0.7)' }}
             />
             
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-zinc-900 border border-white/10 rounded-sm overflow-hidden shadow-2xl z-10 max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-2xl rounded-sm overflow-hidden shadow-2xl z-10 max-h-[90vh] overflow-y-auto"
+              style={{ 
+                backgroundColor: '#FAF7F0', 
+                border: '1px solid rgba(49, 92, 74, 0.15)' 
+              }}
             >
               <button
                 onClick={() => setSelectedCoach(null)}
-                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors z-20"
+                className="absolute top-4 right-4 p-2 rounded-full transition-colors z-20"
+                style={{ color: '#6F716A' }}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -158,26 +175,26 @@ export default function Team() {
                   <img 
                     src={selectedCoach.image} 
                     alt={selectedCoach.name} 
-                    className="w-full h-full object-cover grayscale"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent sm:bg-gradient-to-r" />
+                  <div className="absolute inset-0 sm:bg-gradient-to-r" style={{ background: 'linear-gradient(to top, #FAF7F0, transparent)' }} />
                 </div>
                 
                 <div className="sm:col-span-3 p-6 sm:p-8 sm:pl-0 flex flex-col justify-center">
-                  <div className="text-accent text-sm font-bold uppercase tracking-widest mb-1">
+                  <div className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: '#B89B5E' }}>
                     {selectedCoach.role}
                   </div>
-                  <h3 className="text-3xl font-heading font-bold text-white mb-6">
+                  <h3 className="text-3xl font-heading font-bold mb-6" style={{ color: '#1E2924' }}>
                     {selectedCoach.name}
                   </h3>
                   
                   {selectedCoach.experience && selectedCoach.experience.length > 0 && (
                     <div className="mb-6">
-                      <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-3">Experience</h4>
+                      <h4 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: '#1E2924' }}>Experience</h4>
                       <ul className="space-y-2">
                         {selectedCoach.experience.map((exp, idx) => (
-                          <li key={idx} className="text-gray-400 text-sm flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 shrink-0" /> 
+                          <li key={idx} className="text-sm flex items-start gap-2" style={{ color: '#4A5548' }}>
+                            <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: '#315C4A' }} /> 
                             <span>{exp}</span>
                           </li>
                         ))}
@@ -187,11 +204,11 @@ export default function Team() {
 
                   {selectedCoach.certificates && selectedCoach.certificates.length > 0 && (
                     <div className={selectedCoach.certLink ? "mb-6" : ""}>
-                      <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-3">Certifications</h4>
+                      <h4 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: '#1E2924' }}>Certifications</h4>
                       <ul className="space-y-2">
                         {selectedCoach.certificates.map((cert, idx) => (
-                          <li key={idx} className="text-gray-400 text-sm flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 shrink-0" /> 
+                          <li key={idx} className="text-sm flex items-start gap-2" style={{ color: '#4A5548' }}>
+                            <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: '#B89B5E' }} /> 
                             <span>{cert}</span>
                           </li>
                         ))}
@@ -205,7 +222,11 @@ export default function Team() {
                         href={selectedCoach.certLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block border border-white/20 hover:border-accent hover:text-accent text-white px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-all"
+                        className="inline-block px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-all hover:scale-105"
+                        style={{ 
+                          border: '1px solid rgba(49, 92, 74, 0.3)', 
+                          color: '#315C4A' 
+                        }}
                       >
                         {selectedCoach.certName || "View Certificate"}
                       </a>
