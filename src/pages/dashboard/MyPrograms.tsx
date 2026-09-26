@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Dumbbell, Plus, Save, Trash2, X, Loader2, ClipboardList } from 'lucide-react';
+import { Dumbbell, Plus, Save, Trash2, X, Loader2, ClipboardList, ChevronDown, FileText } from 'lucide-react';
 import type { Exercise, ExercisePlan } from '../../types/exercisePlan';
 import React from 'react';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -30,6 +30,11 @@ export default function MyPrograms() {
   const [showExPlanModal, setShowExPlanModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmExPlanId, setConfirmExPlanId] = useState<string | null>(null);
+  const [expandedPlans, setExpandedPlans] = useState<Record<string, boolean>>({});
+
+  const togglePlan = (id: string) => {
+    setExpandedPlans((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const loadPrograms = async () => {
       if (!db?.app || !user) return;
@@ -196,80 +201,96 @@ export default function MyPrograms() {
           ) : (
             <div className="space-y-4">
               {exercisePlans.map((plan) => (
-                <div key={plan.id} className="bg-zinc-900 border border-white/10 rounded-sm p-4">
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div>
-                      <h3 className="text-lg font-heading font-bold text-white mb-0.5">{plan.title}</h3>
-                      <p className="text-[11px] text-gray-500 uppercase tracking-widest font-bold">
-                        {plan.exercises.length} exercise{plan.exercises.length !== 1 ? 's' : ''} · {plan.coachName === 'Self' ? 'Created by you' : `Assigned by ${plan.coachName}`}
-                      </p>
-                    </div>
-                    {plan.coachName === 'Self' && (
-                      <div className="flex gap-2 shrink-0">
-                        <button
-                          onClick={() => startEditExPlan(plan)}
-                          className="text-xs text-accent hover:text-white transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteExPlan(plan.id)}
-                          className="text-gray-500 hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                <div key={plan.id} className="bg-zinc-900 border border-white/10 rounded-md overflow-hidden">
+                  <div 
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                    onClick={() => togglePlan(plan.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-sm text-gray-300">
+                        <FileText size={18} />
                       </div>
-                    )}
+                      <div>
+                        <h3 className="text-sm font-semibold text-white mb-0.5">{plan.title}</h3>
+                        <p className="text-[11px] text-gray-500 uppercase tracking-widest font-bold">
+                          {plan.exercises.length} exercise{plan.exercises.length !== 1 ? 's' : ''} · {plan.coachName === 'Self' ? 'Created by you' : `Assigned by ${plan.coachName}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {plan.coachName === 'Self' && (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); startEditExPlan(plan); }}
+                            className="text-xs text-accent hover:text-white transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteExPlan(plan.id); }}
+                            className="text-gray-500 hover:text-red-400 transition-colors mr-2"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
+                      )}
+                      <ChevronDown size={18} className={`text-gray-400 transition-transform ${expandedPlans[plan.id] ? 'rotate-180' : ''}`} />
+                    </div>
                   </div>
-                  <div className="overflow-x-auto border border-white/5 rounded-sm">
-                    <table className="w-full text-left text-xs whitespace-nowrap">
-                      <tbody>
-                        {Object.entries(
-                          plan.exercises.reduce((acc, ex) => {
-                            const d = ex.day || 'Day 1';
-                            if (!acc[d]) acc[d] = [];
-                            acc[d].push(ex);
-                            return acc;
-                          }, {} as Record<string, typeof plan.exercises>)
-                        ).map(([dayName, exList]) => {
-                          const groupTitle = exList[0]?.dayTitle || '';
-                          return (
-                            <React.Fragment key={dayName}>
-                              <tr className="bg-white/5 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider">
-                                <th className="px-2 py-1.5 w-24">Day</th>
-                                <th className="px-2 py-1.5">Exercise</th>
-                                <th className="px-2 py-1.5">Sets/Reps</th>
-                                <th className="px-2 py-1.5">Weight</th>
-                                <th className="px-2 py-1.5">RPE</th>
-                                <th className="px-2 py-1.5">Rest</th>
-                              </tr>
-                              {groupTitle && (
-                                <tr className="bg-white/5">
-                                  <td colSpan={6} className="px-3 py-2 font-bold text-sm text-white uppercase tracking-wide">
-                                    {dayName} — {groupTitle}
-                                  </td>
-                                </tr>
-                              )}
-                              {exList.map((ex, idx) => (
-                                <tr key={ex.id} className="border-b border-white/5 last:border-0 text-gray-300 hover:bg-white/5 transition-colors">
-                                  {idx === 0 && (
-                                    <td className="px-3 py-2 align-top border-r border-white/5 bg-accent/10" rowSpan={exList.length}>
-                                      <div className="font-bold text-accent">{dayName}</div>
-                                    </td>
+                  
+                  {expandedPlans[plan.id] && (
+                    <div className="px-4 pb-4 border-t border-accent/20 pt-4">
+                      <div className="overflow-x-auto border border-white/5 rounded-sm">
+                        <table className="w-full text-left text-xs whitespace-nowrap">
+                          <tbody>
+                            {Object.entries(
+                              plan.exercises.reduce((acc, ex) => {
+                                const d = ex.day || 'Day 1';
+                                if (!acc[d]) acc[d] = [];
+                                acc[d].push(ex);
+                                return acc;
+                              }, {} as Record<string, typeof plan.exercises>)
+                            ).map(([dayName, exList]) => {
+                              const groupTitle = exList[0]?.dayTitle || '';
+                              return (
+                                <React.Fragment key={dayName}>
+                                  <tr className="bg-white/5 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider">
+                                    <th className="px-2 py-1.5 w-24">Day</th>
+                                    <th className="px-2 py-1.5">Exercise</th>
+                                    <th className="px-2 py-1.5">Sets/Reps</th>
+                                    <th className="px-2 py-1.5">Weight</th>
+                                    <th className="px-2 py-1.5">RPE</th>
+                                    <th className="px-2 py-1.5">Rest</th>
+                                  </tr>
+                                  {groupTitle && (
+                                    <tr className="bg-white/5">
+                                      <td colSpan={6} className="px-3 py-2 font-bold text-sm text-white uppercase tracking-wide">
+                                        {dayName} — {groupTitle}
+                                      </td>
+                                    </tr>
                                   )}
-                                  <td className="px-3 py-2 font-medium">{ex.name}</td>
-                                  <td className="px-3 py-2">{ex.setsReps || (ex.sets ? `${ex.sets}x${ex.reps}` : '-')}</td>
-                                  <td className="px-3 py-2">{ex.weight || '-'}</td>
-                                  <td className="px-3 py-2">{ex.rpe || '-'}</td>
-                                  <td className="px-3 py-2">{ex.rest || '-'}</td>
-                                </tr>
-                              ))}
-                            </React.Fragment>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                                  {exList.map((ex, idx) => (
+                                    <tr key={ex.id} className="border-b border-white/5 last:border-0 text-gray-300 hover:bg-white/5 transition-colors">
+                                      {idx === 0 && (
+                                        <td className="px-3 py-2 align-top border-r border-white/5 bg-accent/10" rowSpan={exList.length}>
+                                          <div className="font-bold text-accent">{dayName}</div>
+                                        </td>
+                                      )}
+                                      <td className="px-3 py-2 font-medium">{ex.name}</td>
+                                      <td className="px-3 py-2">{ex.setsReps || (ex.sets ? `${ex.sets}x${ex.reps}` : '-')}</td>
+                                      <td className="px-3 py-2">{ex.weight || '-'}</td>
+                                      <td className="px-3 py-2">{ex.rpe || '-'}</td>
+                                      <td className="px-3 py-2">{ex.rest || '-'}</td>
+                                    </tr>
+                                  ))}
+                                </React.Fragment>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
