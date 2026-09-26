@@ -19,9 +19,9 @@ export default function GVFIITLogo({ className = "", size = 48 }: GVFIITLogoProp
     >
       <defs>
         <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1a2a5c" />
-          <stop offset="50%" stopColor="#1a6b5a" />
-          <stop offset="100%" stopColor="#0d7a3e" />
+          <stop offset="0%" stopColor="var(--logo-stop-1, #1a2a5c)" />
+          <stop offset="50%" stopColor="var(--logo-stop-2, #1a6b5a)" />
+          <stop offset="100%" stopColor="var(--logo-stop-3, #0d7a3e)" />
         </linearGradient>
 
         <mask id={maskId}>
