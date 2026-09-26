@@ -1,58 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
 import { Users, UserCheck, ClipboardList, AlertCircle, ListChecks, FilePlus2 } from 'lucide-react';
-import { db } from '../../lib/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Profile } from '../../contexts/AuthContext';
-import type { ExercisePlan } from '../../types/exercisePlan';
 import StatCard from '../../components/StatCard';
-import MembershipDonut from '../../components/MembershipDonut';
-import MonthlyBarChart from '../../components/MonthlyBarChart';
+import { LazyMembershipDonut, LazyMonthlyBarChart } from '../../components/LazyCharts';
 import { lastMonthBuckets, countByMonth, formatRelativeTime } from '../../lib/dateUtils';
+import { useCoachDashboardData } from '../../hooks/useDashboardData';
+import { SkeletonPage } from '../../components/Skeletons';
 
 export default function CoachOverview() {
   const { profile, staff } = useAuth();
   const coachName = profile?.fullName || staff?.name || 'Coach';
   const displayFirstName = coachName.split(' ')[0];
 
-  const [clients, setClients] = useState<Profile[]>([]);
-  const [plans, setPlans] = useState<ExercisePlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useCoachDashboardData(coachName);
 
-  useEffect(() => {
-    const load = async () => {
-      if (!db?.app) {
-        setError('Firebase is not configured. Add your VITE_FIREBASE_* values to .env.');
-        setLoading(false);
-        return;
-      }
-      try {
-        const [clientsSnap, plansSnap] = await Promise.all([
-          getDocs(collection(db, 'profiles')),
-          getDocs(collection(db, 'exercisePlans')),
-        ]);
-        setClients(
-          clientsSnap.docs
-            .map((d) => ({ id: d.id, ...d.data() } as Profile))
-            .filter((p) => p.role === 'CLIENT')
-        );
-        setPlans(plansSnap.docs.map((d) => ({ id: d.id, ...d.data() } as ExercisePlan)));
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load dashboard data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const clients = data?.clients || [];
+  const plans = data?.plans || [];
 
-  // Every coach shares one hardcoded login for now (see AuthContext), so "my plans"
-  // is best-effort matched by coachName rather than a real coachId.
-  const myPlans = useMemo(() => plans.filter((p) => p.coachName === coachName), [plans, coachName]);
-
+  const myPlans = plans; 
   const activeClients = useMemo(() => clients.filter((c) => c.membershipStatus === 'ACTIVE'), [clients]);
 
   const clientIdsWithPlan = useMemo(() => new Set(plans.map((p) => p.clientId)), [plans]);
@@ -100,7 +67,7 @@ export default function CoachOverview() {
       iconColor: 'text-green-400',
     },
     {
-      label: 'Plans You\u2019ve Created',
+      label: 'Plans You’ve Created',
       value: myPlans.length,
       icon: ClipboardList,
       iconBg: 'bg-blue-500/15',
@@ -115,6 +82,10 @@ export default function CoachOverview() {
     },
   ];
 
+  if (isLoading) {
+    return <SkeletonPage />;
+  }
+
   return (
     <div className="p-6 md:p-8">
       <div className="mb-8">
@@ -123,44 +94,38 @@ export default function CoachOverview() {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-sm text-sm mb-6">{error}</div>
+        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-sm text-sm mb-6">
+          {error.message || 'Failed to load dashboard data.'}
+        </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((s) => (
-          <StatCard key={s.label} label={s.label} value={loading ? '—' : s.value} icon={s.icon} iconBg={s.iconBg} iconColor={s.iconColor} />
+          <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} iconBg={s.iconBg} iconColor={s.iconColor} />
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-sm p-6">
+        <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-sm p-6 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-heading font-bold">Plans Created</h2>
             <span className="text-xs text-gray-500">Last 6 months</span>
           </div>
-          {loading ? (
-            <p className="text-gray-500 text-sm">Loading...</p>
-          ) : (
-            <MonthlyBarChart labels={monthBuckets.map((b) => b.label)} values={plansByMonth} color="#3b82f6" />
-          )}
+          <div className="flex-1 w-full relative">
+            <LazyMonthlyBarChart labels={monthBuckets.map((b) => b.label)} values={plansByMonth} color="#3b82f6" />
+          </div>
         </div>
 
         <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
           <h2 className="text-lg font-heading font-bold mb-4">Client Status</h2>
-          {loading ? (
-            <p className="text-gray-500 text-sm">Loading...</p>
-          ) : (
-            <MembershipDonut data={statusBreakdown} total={clients.length} />
-          )}
+          <LazyMembershipDonut data={statusBreakdown} total={clients.length} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-sm p-6">
           <h2 className="text-lg font-heading font-bold mb-4">Recent Plans</h2>
-          {loading ? (
-            <p className="text-gray-500 text-sm">Loading...</p>
-          ) : recentPlans.length === 0 ? (
+          {recentPlans.length === 0 ? (
             <p className="text-gray-500 text-sm">You haven't created any exercise plans yet.</p>
           ) : (
             <div className="divide-y divide-white/5">
@@ -184,9 +149,7 @@ export default function CoachOverview() {
         <div className="space-y-6">
           <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
             <h2 className="text-lg font-heading font-bold mb-4">Needs a Plan</h2>
-            {loading ? (
-              <p className="text-gray-500 text-sm">Loading...</p>
-            ) : clientsWithoutPlan.length === 0 ? (
+            {clientsWithoutPlan.length === 0 ? (
               <p className="text-gray-500 text-sm">Every client has at least one plan. Nice work!</p>
             ) : (
               <div className="space-y-3">

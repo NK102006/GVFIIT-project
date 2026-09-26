@@ -10,8 +10,8 @@ export default function MembershipDonut({ data, total }: { data: StatusSlice[]; 
   const nonZero = data.filter((d) => d.value > 0);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-6">
-      <div className="relative w-40 h-40 shrink-0">
+    <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center justify-center gap-6">
+      <div className="relative w-32 h-32 sm:w-40 sm:h-40 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -42,15 +42,15 @@ export default function MembershipDonut({ data, total }: { data: StatusSlice[]; 
         </div>
       </div>
 
-      <div className="space-y-2 w-full">
+      <div className="space-y-2 w-full flex-1 min-w-[120px]">
         {data.map((slice) => (
           <div key={slice.name} className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: slice.color }} />
-              <span className="text-gray-300">{slice.name}</span>
+            <div className="flex items-center gap-2 truncate pr-2">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: slice.color }} />
+              <span className="text-gray-300 truncate">{slice.name}</span>
             </div>
-            <span className="text-gray-400">
-              {slice.value} {total > 0 && <span className="text-gray-600">({Math.round((slice.value / total) * 100)}%)</span>}
+            <span className="text-gray-400 whitespace-nowrap">
+              {slice.value} {total > 0 && <span className="text-gray-600 ml-1">({Math.round((slice.value / total) * 100)}%)</span>}
             </span>
           </div>
         ))}

@@ -178,8 +178,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentUser);
       if (currentUser) {
         setLoading(true);
-        // Small delay to ensure the token is ready
-        await new Promise((r) => setTimeout(r, 100));
         await fetchProfile(currentUser.uid);
         setLoading(false);
       } else {
@@ -193,16 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, refreshProfile, staff, staffLogin, staffLogout }}>
-      {loading ? (
-        <div className="min-h-screen bg-black flex items-center justify-center text-white relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/20 rounded-full blur-[80px] pointer-events-none" />
-          <div className="animate-pulse font-heading tracking-widest text-accent font-bold text-xl relative z-10">
-            LOADING GV FIIT...
-          </div>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 }

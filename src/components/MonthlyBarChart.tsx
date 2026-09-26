@@ -13,9 +13,9 @@ export default function MonthlyBarChart({
   const allZero = values.every((v) => v === 0);
 
   return (
-    <div className="h-56">
+    <div className="w-full h-full min-h-[200px] relative">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
           <XAxis dataKey="label" tick={{ fill: '#71717a', fontSize: 12 }} axisLine={false} tickLine={false} />
           <YAxis
@@ -23,7 +23,6 @@ export default function MonthlyBarChart({
             tick={{ fill: '#71717a', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
-            width={28}
           />
           <Tooltip
             cursor={{ fill: 'rgba(255,255,255,0.04)' }}

@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
 import { Users, UserCheck, Dumbbell, AlertTriangle, UserPlus, ListChecks } from 'lucide-react';
-import { db } from '../../lib/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Profile } from '../../contexts/AuthContext';
 import StatCard from '../../components/StatCard';
-import MembershipDonut from '../../components/MembershipDonut';
-import MonthlyBarChart from '../../components/MonthlyBarChart';
+import { LazyMembershipDonut, LazyMonthlyBarChart } from '../../components/LazyCharts';
 import { lastMonthBuckets, countByMonth, daysUntil } from '../../lib/dateUtils';
+import { useAdminDashboardData } from '../../hooks/useDashboardData';
+import { SkeletonPage } from '../../components/Skeletons';
 
 const EXPIRING_WINDOW_DAYS = 14;
 
@@ -16,41 +15,17 @@ export default function AdminDashboard() {
   const { profile, staff } = useAuth();
   const displayName = profile?.fullName?.split(' ')[0] || staff?.name || 'Admin';
 
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [createdAtById, setCreatedAtById] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useAdminDashboardData();
 
-  useEffect(() => {
-    const load = async () => {
-      if (!db?.app) {
-        setError('Firebase is not configured. Add your VITE_FIREBASE_* values to .env.');
-        setLoading(false);
-        return;
-      }
-      try {
-        const snap = await getDocs(collection(db, 'profiles'));
-        const loaded: Profile[] = [];
-        const createdAt: Record<string, string> = {};
-        snap.docs.forEach((d) => {
-          const data = d.data();
-          loaded.push({ id: d.id, ...data } as Profile);
-          if (data.createdAt) createdAt[d.id] = data.createdAt;
-        });
-        setProfiles(loaded);
-        setCreatedAtById(createdAt);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load dashboard data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const clients = data?.clients || [];
+  const coaches = data?.coaches || [];
 
-  const clients = useMemo(() => profiles.filter((p) => p.role === 'CLIENT'), [profiles]);
-  const coaches = useMemo(() => profiles.filter((p) => p.role === 'COACH'), [profiles]);
+  const createdAtById = useMemo(() => {
+    const map: Record<string, string> = {};
+    clients.forEach(c => { if (c.createdAt) map[c.id] = c.createdAt; });
+    return map;
+  }, [clients]);
+
   const activeClients = useMemo(() => clients.filter((p) => p.membershipStatus === 'ACTIVE'), [clients]);
 
   const expiringClients = useMemo(
@@ -119,6 +94,10 @@ export default function AdminDashboard() {
     },
   ];
 
+  if (isLoading) {
+    return <SkeletonPage />;
+  }
+
   return (
     <div className="p-6 md:p-8">
       <div className="mb-8">
@@ -127,35 +106,31 @@ export default function AdminDashboard() {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-sm text-sm mb-6">{error}</div>
+        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-sm text-sm mb-6">
+          {error.message || 'Failed to load dashboard data.'}
+        </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((s) => (
-          <StatCard key={s.label} label={s.label} value={loading ? '—' : s.value} icon={s.icon} iconBg={s.iconBg} iconColor={s.iconColor} />
+          <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} iconBg={s.iconBg} iconColor={s.iconColor} />
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-sm p-6">
+        <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-sm p-6 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-heading font-bold">New Sign-ups</h2>
             <span className="text-xs text-gray-500">Last 6 months</span>
           </div>
-          {loading ? (
-            <p className="text-gray-500 text-sm">Loading...</p>
-          ) : (
-            <MonthlyBarChart labels={monthBuckets.map((b) => b.label)} values={signupsByMonth} />
-          )}
+          <div className="flex-1 w-full relative">
+            <LazyMonthlyBarChart labels={monthBuckets.map((b) => b.label)} values={signupsByMonth} />
+          </div>
         </div>
 
         <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
           <h2 className="text-lg font-heading font-bold mb-4">Membership Status</h2>
-          {loading ? (
-            <p className="text-gray-500 text-sm">Loading...</p>
-          ) : (
-            <MembershipDonut data={statusBreakdown} total={clients.length} />
-          )}
+          <LazyMembershipDonut data={statusBreakdown} total={clients.length} />
         </div>
       </div>
 
@@ -168,9 +143,7 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
-          {loading ? (
-            <p className="text-gray-500 text-sm">Loading...</p>
-          ) : recentClients.length === 0 ? (
+          {recentClients.length === 0 ? (
             <p className="text-gray-500 text-sm">No clients yet.</p>
           ) : (
             <div className="overflow-x-auto">
@@ -220,9 +193,7 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           <div className="bg-zinc-900 border border-white/10 rounded-sm p-6">
             <h2 className="text-lg font-heading font-bold mb-4">Expiring Soon</h2>
-            {loading ? (
-              <p className="text-gray-500 text-sm">Loading...</p>
-            ) : expiringClients.length === 0 ? (
+            {expiringClients.length === 0 ? (
               <p className="text-gray-500 text-sm">No memberships expiring in the next {EXPIRING_WINDOW_DAYS} days.</p>
             ) : (
               <div className="space-y-3">
