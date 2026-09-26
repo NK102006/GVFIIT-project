@@ -23,9 +23,10 @@
   }
 }
 
---theme-accent-light: #40916C;
---theme-accent-bg: rgba(45, 106, 79, 0.08);
---theme-accent-border: rgba(45, 106, 79, 0.2);
+:root {
+  --theme-accent-light: #40916C;
+  --theme-accent-bg: rgba(45, 106, 79, 0.08);
+  --theme-accent-border: rgba(45, 106, 79, 0.2);
 }
 
 @layer base {
