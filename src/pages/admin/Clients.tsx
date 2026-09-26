@@ -397,7 +397,7 @@ export default function Clients() {
                         planExpiry: f.planExpiry && f.planExpiry < newStart ? '' : f.planExpiry,
                       }));
                     }}
-                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
 
@@ -408,7 +408,7 @@ export default function Clients() {
                     value={form.planExpiry}
                     min={form.planStart || undefined}
                     onChange={(e) => setForm((f) => ({ ...f, planExpiry: e.target.value }))}
-                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+                    className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
               </div>

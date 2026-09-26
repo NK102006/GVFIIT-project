@@ -11,41 +11,21 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { ArrowLeft, Plus, Trash2, Save, Dumbbell, Apple, Activity, FileText, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Dumbbell, Activity, FileText, Loader2, X, ClipboardList } from 'lucide-react';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import MetricsTracker from '../../components/MetricsTracker';
 import ConfirmModal from '../../components/ConfirmModal';
+import SCAssessmentTab from '../../components/SCAssessmentTab';
 import type { Profile } from '../../contexts/AuthContext';
 import type { Exercise, ExercisePlan } from '../../types/exercisePlan';
 
-const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-type Meal = {
-  id: string;
-  name: string;
-  items: string;
-  notes: string;
-};
-
-type DietPlan = {
-  id: string;
-  clientId: string;
-  clientName: string;
-  coachName: string;
-  dayOfWeek: string;
-  meals: Meal[];
-  createdAt: string;
-  updatedAt: string;
-};
 
 function emptyExercise(): Exercise {
   return { id: crypto.randomUUID(), name: '', sets: 3, reps: 10, notes: '' };
 }
 
-function emptyMeal(): Meal {
-  return { id: crypto.randomUUID(), name: '', items: '', notes: '' };
-}
 
 type CoachNote = {
   id: string;
@@ -66,7 +46,7 @@ export default function ClientPlan() {
   const [saving, setSaving] = useState(false);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'EXERCISE' | 'DIET' | 'METRICS' | 'NOTES'>('EXERCISE');
+  const [activeTab, setActiveTab] = useState<'EXERCISE' | 'ASSESSMENT' | 'METRICS' | 'NOTES'>('EXERCISE');
 
   // =====================
   // EXERCISE PLAN STATE
@@ -77,13 +57,6 @@ export default function ClientPlan() {
   const [exercises, setExercises] = useState<Exercise[]>([emptyExercise()]);
   const [showExPlanModal, setShowExPlanModal] = useState(false);
 
-  // =====================
-  // DIET PLAN STATE
-  // =====================
-  const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
-  const [editingDietPlanId, setEditingDietPlanId] = useState<string | null>(null);
-  const [dietDay, setDietDay] = useState(DAYS_OF_WEEK[0]);
-  const [meals, setMeals] = useState<Meal[]>([emptyMeal()]);
 
   // =====================
   // COACH NOTES STATE
@@ -95,7 +68,7 @@ export default function ClientPlan() {
   // DELETE CONFIRMATION STATE
   // =====================
   const [confirmExPlanId, setConfirmExPlanId] = useState<string | null>(null);
-  const [confirmDietPlanId, setConfirmDietPlanId] = useState<string | null>(null);
+
   const [confirmNoteId, setConfirmNoteId] = useState<string | null>(null);
 
   const loadData = async () => {
@@ -122,14 +95,6 @@ export default function ClientPlan() {
       loadedEx.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
       setExercisePlans(loadedEx);
 
-      // 3. Load Diet Plans
-      const dietQuery = query(collection(db, 'dietPlans'), where('clientId', '==', clientId));
-      const dietSnap = await getDocs(dietQuery);
-      const loadedDiet = dietSnap.docs.map((d) => ({ id: d.id, ...d.data() } as DietPlan));
-
-      const dayOrder = Object.fromEntries(DAYS_OF_WEEK.map((d, i) => [d, i]));
-      loadedDiet.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
-      setDietPlans(loadedDiet);
 
       // 4. Load Coach Notes
       const notesQuery = query(collection(db, 'coachNotes'), where('clientId', '==', clientId));
@@ -240,83 +205,6 @@ export default function ClientPlan() {
   };
 
   // =====================
-  // DIET PLAN ACTIONS
-  // =====================
-  const startNewDietPlan = () => {
-    setEditingDietPlanId(null);
-    setDietDay(DAYS_OF_WEEK[0]);
-    setMeals([emptyMeal()]);
-  };
-
-  const startEditDietPlan = (plan: DietPlan) => {
-    setEditingDietPlanId(plan.id);
-    setDietDay(plan.dayOfWeek);
-    setMeals(plan.meals.length ? plan.meals : [emptyMeal()]);
-  };
-
-  const updateMeal = (id: string, patch: Partial<Meal>) => {
-    setMeals((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
-  };
-
-  const addMealRow = () => setMeals((prev) => [...prev, emptyMeal()]);
-
-  const removeMealRow = (id: string) =>
-    setMeals((prev) => (prev.length > 1 ? prev.filter((m) => m.id !== id) : prev));
-
-  const handleSaveDietPlan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!db?.app || !clientId || !client) return;
-    setSaving(true);
-    try {
-      const cleanMeals = meals.filter((m) => m.name.trim().length > 0 || m.items.trim().length > 0);
-
-      if (editingDietPlanId) {
-        await updateDoc(doc(db, 'dietPlans', editingDietPlanId), {
-          dayOfWeek: dietDay,
-          meals: cleanMeals,
-          updatedAt: new Date().toISOString(),
-        });
-      } else {
-        await addDoc(collection(db, 'dietPlans'), {
-          clientId,
-          clientName: client.fullName,
-          coachName,
-          dayOfWeek: dietDay,
-          meals: cleanMeals,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-      }
-      startNewDietPlan();
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      setError('Failed to save diet plan.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteDietPlan = (planId: string) => {
-    if (!db?.app) return;
-    setConfirmDietPlanId(planId);
-  };
-
-  const confirmDeleteDietPlan = async () => {
-    if (!confirmDietPlanId) return;
-    try {
-      await deleteDoc(doc(db, 'dietPlans', confirmDietPlanId));
-      setDietPlans((prev) => prev.filter((p) => p.id !== confirmDietPlanId));
-      if (editingDietPlanId === confirmDietPlanId) startNewDietPlan();
-    } catch (err) {
-      console.error(err);
-      setError('Failed to delete diet plan.');
-    } finally {
-      setConfirmDietPlanId(null);
-    }
-  };
-
-  // =====================
   // COACH NOTES ACTIONS
   // =====================
   const handleSaveNote = async (e: React.FormEvent) => {
@@ -416,12 +304,12 @@ export default function ClientPlan() {
           Exercise Plans
         </button>
         <button
-          onClick={() => setActiveTab('DIET')}
-          className={`px-6 py-3 text-sm font-bold uppercase tracking-widest border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'DIET' ? 'border-accent text-accent' : 'border-transparent text-gray-500 hover:text-white'
+          onClick={() => setActiveTab('ASSESSMENT')}
+          className={`px-6 py-3 text-sm font-bold uppercase tracking-widest border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'ASSESSMENT' ? 'border-accent text-accent' : 'border-transparent text-gray-500 hover:text-white'
             }`}
         >
-          <Apple size={16} />
-          Diet Plans
+          <ClipboardList size={16} />
+          S&C Assessment
         </button>
         <button
           onClick={() => setActiveTab('METRICS')}
@@ -636,64 +524,64 @@ export default function ClientPlan() {
                                   </button>
                                 </td>
                               )}
-                            <td className="p-1">
-                              <input
-                                type="text"
-                                required
-                                placeholder="Exercise name"
-                                value={ex.name}
-                                onChange={(e) => updateExercise(ex.id, { name: e.target.value })}
-                                className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
-                              />
-                            </td>
-                            <td className="p-1 w-28">
-                              <input
-                                type="text"
-                                placeholder="e.g. 3x10"
-                                value={ex.setsReps || ''}
-                                onChange={(e) => updateExercise(ex.id, { setsReps: e.target.value })}
-                                className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
-                              />
-                            </td>
-                            <td className="p-1 w-24">
-                              <input
-                                type="text"
-                                placeholder="e.g. 10kg"
-                                value={ex.weight || ''}
-                                onChange={(e) => updateExercise(ex.id, { weight: e.target.value })}
-                                className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
-                              />
-                            </td>
-                            <td className="p-1 w-20">
-                              <input
-                                type="text"
-                                placeholder="e.g. 8"
-                                value={ex.rpe || ''}
-                                onChange={(e) => updateExercise(ex.id, { rpe: e.target.value })}
-                                className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
-                              />
-                            </td>
-                            <td className="p-1 w-24">
-                              <input
-                                type="text"
-                                placeholder="e.g. 60s"
-                                value={ex.rest || ''}
-                                onChange={(e) => updateExercise(ex.id, { rest: e.target.value })}
-                                className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
-                              />
-                            </td>
-                            <td className="p-1 text-center align-middle">
-                              <button
-                                type="button"
-                                onClick={() => removeExerciseRow(ex.id)}
-                                className="p-1.5 text-gray-500 hover:text-red-400 transition-colors rounded-sm hover:bg-white/5 inline-flex items-center justify-center"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </React.Fragment>
+                              <td className="p-1">
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Exercise name"
+                                  value={ex.name}
+                                  onChange={(e) => updateExercise(ex.id, { name: e.target.value })}
+                                  className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
+                                />
+                              </td>
+                              <td className="p-1 w-28">
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 3x10"
+                                  value={ex.setsReps || ''}
+                                  onChange={(e) => updateExercise(ex.id, { setsReps: e.target.value })}
+                                  className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
+                                />
+                              </td>
+                              <td className="p-1 w-24">
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 10kg"
+                                  value={ex.weight || ''}
+                                  onChange={(e) => updateExercise(ex.id, { weight: e.target.value })}
+                                  className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
+                                />
+                              </td>
+                              <td className="p-1 w-20">
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 8"
+                                  value={ex.rpe || ''}
+                                  onChange={(e) => updateExercise(ex.id, { rpe: e.target.value })}
+                                  className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
+                                />
+                              </td>
+                              <td className="p-1 w-24">
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 60s"
+                                  value={ex.rest || ''}
+                                  onChange={(e) => updateExercise(ex.id, { rest: e.target.value })}
+                                  className="w-full px-2 py-1.5 bg-black/50 border border-transparent hover:border-white/20 focus:border-accent rounded-sm outline-none transition-colors"
+                                />
+                              </td>
+                              <td className="p-1 text-center align-middle">
+                                <button
+                                  type="button"
+                                  onClick={() => removeExerciseRow(ex.id)}
+                                  className="p-1.5 text-gray-500 hover:text-red-400 transition-colors rounded-sm hover:bg-white/5 inline-flex items-center justify-center"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
                       );
                     })}
                   </tbody>
@@ -737,143 +625,10 @@ export default function ClientPlan() {
         </div>
       )}
 
-      {/* TAB CONTENT: DIET PLANS */}
-      {activeTab === 'DIET' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-lg font-heading font-bold mb-3">Saved Diet Plans</h2>
-            {dietPlans.length === 0 ? (
-              <p className="text-gray-500 text-sm">No diet plans yet — create one on the right.</p>
-            ) : (
-              <div className="space-y-3">
-                {dietPlans.map((plan) => (
-                  <div key={plan.id} className="bg-zinc-900 border border-white/10 rounded-sm p-4">
-                    <div className="flex items-start justify-between gap-3 border-b border-white/5 pb-2 mb-3">
-                      <div>
-                        <p className="font-semibold text-accent text-base">{plan.dayOfWeek}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {plan.meals.length} meal{plan.meals.length !== 1 ? 's' : ''} · by {plan.coachName}
-                        </p>
-                      </div>
-                      <div className="flex gap-2 shrink-0">
-                        <button
-                          onClick={() => startEditDietPlan(plan)}
-                          className="text-xs text-accent hover:text-white transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteDietPlan(plan.id)}
-                          className="text-gray-500 hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      {plan.meals.map((meal) => (
-                        <div key={meal.id}>
-                          <p className="text-sm font-bold text-gray-300">{meal.name}</p>
-                          <p className="text-sm text-gray-400 mt-1 whitespace-pre-wrap">{meal.items}</p>
-                          {meal.notes && <p className="text-xs text-gray-500 mt-1 italic">{meal.notes}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <h2 className="text-lg font-heading font-bold mb-3">
-              {editingDietPlanId ? 'Edit Diet Plan' : 'New Diet Plan'}
-            </h2>
-            <form onSubmit={handleSaveDietPlan} className="bg-zinc-900 border border-white/10 rounded-sm p-4 space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Day of Week</label>
-                <select
-                  required
-                  value={dietDay}
-                  onChange={(e) => setDietDay(e.target.value)}
-                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
-                >
-                  {DAYS_OF_WEEK.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-3">
-                {meals.map((meal, idx) => (
-                  <div key={meal.id} className="border border-white/10 rounded-sm p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-gray-500">Meal {idx + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeMealRow(meal.id)}
-                        className="text-gray-500 hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Breakfast, Pre-workout Snack"
-                      value={meal.name}
-                      onChange={(e) => updateMeal(meal.id, { name: e.target.value })}
-                      className="w-full mb-2 px-3 py-1.5 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
-                    />
-                    <textarea
-                      required
-                      placeholder="Food items (e.g. 2 whole eggs, 1 slice toast)"
-                      value={meal.items}
-                      onChange={(e) => updateMeal(meal.id, { items: e.target.value })}
-                      rows={3}
-                      className="w-full mb-2 px-3 py-1.5 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors resize-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Notes (optional, e.g. cook in olive oil)"
-                      value={meal.notes}
-                      onChange={(e) => updateMeal(meal.id, { notes: e.target.value })}
-                      className="w-full px-3 py-1.5 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={addMealRow}
-                className="flex items-center gap-2 text-xs font-bold text-accent hover:text-white transition-colors"
-              >
-                <Plus size={14} />
-                Add meal
-              </button>
-
-              <div className="flex gap-3 pt-2">
-                {editingDietPlanId && (
-                  <button
-                    type="button"
-                    onClick={startNewDietPlan}
-                    className="flex-1 py-2.5 border border-white/20 text-white text-sm font-semibold rounded-sm hover:bg-white/5 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-accent hover:bg-accent/90 text-white text-sm font-bold rounded-sm transition-colors disabled:opacity-50"
-                >
-                  <Save size={15} />
-                  {saving ? <><Loader2 size={16} className="animate-spin inline mr-2" />Saving...</> : editingDietPlanId ? 'Update Diet Plan' : 'Save Diet Plan'}
-                </button>
-              </div>
-            </form>
-          </div>
+      {/* TAB CONTENT: ASSESSMENT */}
+      {activeTab === 'ASSESSMENT' && clientId && (
+        <div className="bg-zinc-900 border border-white/10 rounded-sm p-6 mb-6">
+          <SCAssessmentTab clientId={clientId} clientName={client?.fullName || ''} coachName={coachName} />
         </div>
       )}
 
@@ -949,15 +704,6 @@ export default function ClientPlan() {
         confirmText="Delete"
         onConfirm={confirmDeleteExPlan}
         onCancel={() => setConfirmExPlanId(null)}
-      />
-
-      <ConfirmModal
-        isOpen={!!confirmDietPlanId}
-        title="Delete Diet Plan"
-        message="Are you sure you want to delete this diet plan?"
-        confirmText="Delete"
-        onConfirm={confirmDeleteDietPlan}
-        onCancel={() => setConfirmDietPlanId(null)}
       />
 
       <ConfirmModal

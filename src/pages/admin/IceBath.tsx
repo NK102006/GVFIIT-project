@@ -3,6 +3,7 @@ import {
   collection,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
   getDocs,
   query,
@@ -32,6 +33,7 @@ type IceBathBooking = {
   endTime: string;
   fee: number;
   timestamp: string;
+  paymentStatus?: 'PAID' | 'UNPAID';
 };
 
 // Helper to add 20 mins to an HH:mm time string
@@ -183,6 +185,19 @@ export default function IceBathAdmin() {
     }
   };
 
+
+  const handlePaymentStatus = async (bookingId: string, status: 'PAID' | 'UNPAID') => {
+    try {
+      await updateDoc(doc(db, 'iceBathBookings', bookingId), {
+        paymentStatus: status
+      });
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, paymentStatus: status } : b));
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update payment status.');
+    }
+  };
+
   return (
     <div className="p-6 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -239,6 +254,7 @@ export default function IceBathAdmin() {
                     <th className="px-5 py-3 font-medium">Day</th>
                     <th className="px-5 py-3 font-medium">Time (20 mins)</th>
                     <th className="px-5 py-3 font-medium">Fee (₹)</th>
+                      <th className="px-5 py-3 font-medium">Status</th>
                     <th className="px-5 py-3 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
@@ -280,7 +296,7 @@ export default function IceBathAdmin() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+              className="px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
             />
           </div>
 
@@ -297,6 +313,7 @@ export default function IceBathAdmin() {
                       <th className="px-5 py-3 font-medium">Time</th>
                       <th className="px-5 py-3 font-medium">Client</th>
                       <th className="px-5 py-3 font-medium">Fee (₹)</th>
+                      <th className="px-5 py-3 font-medium">Status</th>
                       <th className="px-5 py-3 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
@@ -308,6 +325,20 @@ export default function IceBathAdmin() {
                         </td>
                         <td className="px-5 py-3 font-medium">{booking.clientName}</td>
                         <td className="px-5 py-3 font-bold text-green-400">₹{booking.fee}</td>
+                        <td className="px-5 py-3">
+                          <select
+                            value={booking.paymentStatus || 'UNPAID'}
+                            onChange={(e) => handlePaymentStatus(booking.id, e.target.value as 'PAID' | 'UNPAID')}
+                            className={`px-2 py-1 text-xs font-bold rounded-sm border focus:outline-none transition-colors ${
+                              (booking.paymentStatus || 'UNPAID') === 'PAID' 
+                                ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+                                : 'bg-red-500/10 text-red-400 border-red-500/20'
+                            }`}
+                          >
+                            <option value="UNPAID" className="bg-black text-white">Unpaid</option>
+                            <option value="PAID" className="bg-black text-white">Paid</option>
+                          </select>
+                        </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center justify-end gap-2">
                             <button
@@ -332,7 +363,7 @@ export default function IceBathAdmin() {
       {/* Add Slot Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#111] border border-white/10 rounded-md w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-zinc-900 border border-white/10 rounded-md w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               <h2 className="text-lg font-heading font-bold">Add Ice Bath Slot</h2>
               <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-white transition-colors p-1">
@@ -362,7 +393,7 @@ export default function IceBathAdmin() {
                   required
                   value={formTime}
                   onChange={(e) => setFormTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                 />
                 <p className="text-xs text-gray-500 mt-1">End time will automatically be set to {formTime ? calculateEndTime(formTime) : '+20 mins'}.</p>
               </div>

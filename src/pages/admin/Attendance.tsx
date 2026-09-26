@@ -213,7 +213,7 @@ export default function Attendance() {
             max={new Date().toISOString().split('T')[0]}
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+            className="w-full sm:w-auto px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
           />
         </div>
         <div>
@@ -300,7 +300,7 @@ export default function Attendance() {
       {/* Create/Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#111] border border-white/10 rounded-md w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-zinc-900 border border-white/10 rounded-md w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               <h2 className="text-lg font-heading font-bold">{editingId ? 'Edit Record' : 'Add Record'}</h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-white transition-colors p-1">
@@ -334,7 +334,7 @@ export default function Attendance() {
                   max={new Date().toISOString().split('T')[0]}
                   value={formDate}
                   onChange={(e) => setFormDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors [color-scheme:dark]"
+                  className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
 

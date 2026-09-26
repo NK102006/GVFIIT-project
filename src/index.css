@@ -12,7 +12,522 @@
   body {
     @apply bg-black text-white antialiased font-sans;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading font-bold tracking-tight;
   }
+}
+
+--theme-accent-light: #40916C;
+--theme-accent-bg: rgba(45, 106, 79, 0.08);
+--theme-accent-border: rgba(45, 106, 79, 0.2);
+}
+
+@layer base {
+  body {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-text) !important;
+    @apply antialiased font-sans;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold tracking-tight;
+    color: var(--theme-text) !important;
+  }
+
+  /* ─── Scrollbar Styling ─── */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--theme-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--theme-border);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--theme-text-muted);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   BACKGROUND OVERRIDES
+   bg-black, bg-zinc-900, bg-zinc-950, bg-[#111]
+   all become warm beige/cream surfaces
+   ═══════════════════════════════════════════════════ */
+
+@layer utilities {
+
+  /* ─── Page-level backgrounds ─── */
+  .bg-black {
+    background-color: var(--theme-bg) !important;
+  }
+
+  .bg-zinc-950 {
+    background-color: var(--theme-bg-alt) !important;
+  }
+
+  /* ─── Card/panel surfaces ─── */
+  .bg-zinc-900 {
+    background-color: var(--theme-surface) !important;
+  }
+
+  .bg-\[\#111\] {
+    background-color: var(--theme-surface) !important;
+  }
+
+  /* ─── Subtle overlays on surfaces ─── */
+  .bg-white\/5 {
+    background-color: rgba(45, 106, 79, 0.04) !important;
+  }
+
+  .bg-white\/\[0\.02\] {
+    background-color: rgba(45, 106, 79, 0.02) !important;
+  }
+
+  .hover\:bg-white\/5:hover {
+    background-color: rgba(45, 106, 79, 0.06) !important;
+  }
+
+  .hover\:bg-white\/\[0\.02\]:hover {
+    background-color: rgba(45, 106, 79, 0.04) !important;
+  }
+
+  /* ─── Form inputs ─── */
+  .bg-black\/50 {
+    background-color: var(--theme-bg) !important;
+  }
+
+  .bg-black\/30 {
+    background-color: var(--theme-bg-alt) !important;
+  }
+
+  /* ─── Modal backdrop ─── */
+  .bg-black\/70 {
+    background-color: rgba(27, 67, 50, 0.65) !important;
+  }
+
+  .bg-black\/80 {
+    background-color: rgba(27, 67, 50, 0.7) !important;
+  }
+
+  .bg-black\/60 {
+    background-color: rgba(27, 67, 50, 0.5) !important;
+  }
+
+  .bg-black\/50 {
+    background-color: rgba(27, 67, 50, 0.4) !important;
+  }
+
+  /* ─── Accent ─── */
+  .bg-accent {
+    background-color: var(--theme-accent) !important;
+  }
+
+  .hover\:bg-accent\/90:hover {
+    background-color: var(--theme-accent-light) !important;
+  }
+
+  .bg-accent\/10 {
+    background-color: var(--theme-accent-bg) !important;
+  }
+
+  /* ─── Text Colors ─── */
+  .text-white {
+    color: var(--theme-text) !important;
+  }
+
+  .text-gray-300 {
+    color: var(--theme-text-secondary) !important;
+  }
+
+  .text-gray-400 {
+    color: var(--theme-text-muted) !important;
+  }
+
+  .text-gray-500 {
+    color: #97A89B !important;
+  }
+
+  .text-gray-600 {
+    color: #B0BFAD !important;
+  }
+
+  .text-accent {
+    color: var(--theme-accent) !important;
+  }
+
+  /* ─── Hover text ─── */
+  .hover\:text-white:hover {
+    color: var(--theme-text) !important;
+  }
+
+  /* ─── Border Colors ─── */
+  .border-white\/10 {
+    border-color: var(--theme-border) !important;
+  }
+
+  .border-white\/5 {
+    border-color: var(--theme-border-light) !important;
+  }
+
+  .border-white\/20 {
+    border-color: var(--theme-border) !important;
+  }
+
+  .border-accent {
+    border-color: var(--theme-accent) !important;
+  }
+
+  .border-accent\/20 {
+    border-color: var(--theme-accent-border) !important;
+  }
+
+  .border-transparent {
+    border-color: transparent !important;
+  }
+
+  .focus\:border-accent:focus {
+    border-color: var(--theme-accent) !important;
+  }
+
+  /* ─── Divide ─── */
+  .divide-white\/5> :not(:first-child) {
+    border-color: var(--theme-border-light) !important;
+  }
+
+  /* ─── Placeholder ─── */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--theme-text-muted) !important;
+  }
+
+  /* ─── Selection ─── */
+  ::selection {
+    background-color: rgba(45, 106, 79, 0.2);
+    color: var(--theme-text);
+  }
+
+  /* ─── Backdrop blur for mobile header ─── */
+  .bg-black\/50.backdrop-blur-md {
+    background-color: rgba(245, 240, 232, 0.85) !important;
+  }
+
+  /* ─── Green-400 stat color ─── */
+  .text-green-400 {
+    color: #2D6A4F !important;
+  }
+
+  /* ─── Option elements in select ─── */
+  option.bg-black {
+    background-color: var(--theme-surface) !important;
+  }
+
+  option.text-white {
+    color: var(--theme-text) !important;
+  }
+
+  select option {
+    background-color: var(--theme-surface) !important;
+    color: var(--theme-text) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR OVERRIDE
+   Keep sidebars dark green for contrast & branding
+   ═══════════════════════════════════════════════════ */
+
+aside,
+[class*="bg-zinc-950"][class*="border-r"],
+.lg\:flex.lg\:w-72>div {
+  background-color: var(--theme-sidebar) !important;
+  border-right-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Text inside sidebars stays light */
+aside .text-white,
+aside p.text-white,
+aside .text-sm.font-semibold,
+.lg\:flex.lg\:w-72 .text-white {
+  color: #F0EDE5 !important;
+}
+
+aside .text-gray-400,
+aside .text-gray-500,
+aside .text-xs,
+.lg\:flex.lg\:w-72 .text-gray-400,
+.lg\:flex.lg\:w-72 .text-gray-500 {
+  color: rgba(240, 237, 229, 0.55) !important;
+}
+
+aside a:hover .text-gray-300,
+aside .hover\:text-white:hover,
+.lg\:flex.lg\:w-72 .hover\:text-white:hover {
+  color: #F0EDE5 !important;
+}
+
+aside .hover\:bg-white\/5:hover,
+.lg\:flex.lg\:w-72 .hover\:bg-white\/5:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+aside .border-white\/10,
+aside .border-t,
+aside .border-b,
+.lg\:flex.lg\:w-72 .border-white\/10 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Active nav link in sidebar */
+aside .bg-accent,
+.lg\:flex.lg\:w-72 .bg-accent {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+aside .bg-accent .text-white,
+aside .bg-accent.text-white {
+  color: #F0EDE5 !important;
+}
+
+/* Sidebar for client layout (uses bg-zinc-950 border-r) */
+.flex.h-full.flex-col.bg-zinc-950 {
+  background-color: var(--theme-sidebar) !important;
+}
+
+/* ─── Mobile top bar ─── */
+.md\:hidden.fixed.bg-zinc-900 {
+  background-color: var(--theme-sidebar) !important;
+}
+
+.md\:hidden.fixed.bg-zinc-900 .text-white {
+  color: #F0EDE5 !important;
+}
+
+.md\:hidden.fixed.bg-zinc-900 .text-gray-500 {
+  color: rgba(240, 237, 229, 0.55) !important;
+}
+
+/* ─── Client mobile header ─── */
+.sticky.bg-black\/50.backdrop-blur-md.lg\:hidden {
+  background-color: rgba(27, 67, 50, 0.9) !important;
+}
+
+.sticky.bg-black\/50.backdrop-blur-md .text-white,
+.sticky.bg-black\/50.backdrop-blur-md .text-gray-400 {
+  color: #F0EDE5 !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   MODAL OVERRIDES
+   Modals get the cream surface look
+   ═══════════════════════════════════════════════════ */
+
+.fixed.inset-0.z-50 .bg-zinc-900,
+.fixed.inset-0.z-50 .bg-\[\#111\] {
+  background-color: var(--theme-surface) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   STATUS BADGES
+   Keep semantic colors for status indicators
+   ═══════════════════════════════════════════════════ */
+
+.bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.text-emerald-400 {
+  color: #059669 !important;
+}
+
+.border-emerald-500\/20 {
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.bg-amber-500\/10 {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+}
+
+.text-amber-400 {
+  color: #D97706 !important;
+}
+
+.border-amber-500\/20 {
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.bg-red-500\/10 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.text-red-400 {
+  color: #DC2626 !important;
+}
+
+.border-red-500\/20 {
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.hover\:text-red-400:hover {
+  color: #DC2626 !important;
+}
+
+.hover\:bg-red-500\/10:hover {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+
+.hover\:bg-red-500\/20:hover {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.bg-green-500\/10 {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+.text-green-400 {
+  color: #16A34A !important;
+}
+
+.border-green-500\/20 {
+  border-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+   Accent buttons stay vivid green
+   ═══════════════════════════════════════════════════ */
+
+button.bg-accent,
+a.bg-accent,
+[type="submit"].bg-accent {
+  background-color: var(--theme-accent) !important;
+  color: #FFFDF8 !important;
+}
+
+button.bg-accent:hover,
+a.bg-accent:hover {
+  background-color: var(--theme-accent-light) !important;
+}
+
+/* Ensure text on accent buttons stays white/cream */
+.bg-accent.text-white {
+  color: #FFFDF8 !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   HOME PAGE & LOGIN PAGE
+   These pages keep their original dark aesthetic
+   ═══════════════════════════════════════════════════ */
+
+/* Hero overlay */
+section.relative .bg-black\/70 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Hero text stays white for readability over image */
+section.relative .text-white {
+  color: #FFFFFF !important;
+}
+
+section.relative .text-gray-300 {
+  color: #D1D5DB !important;
+}
+
+/* Hero button border */
+section.relative .border-white {
+  border-color: #FFFFFF !important;
+}
+
+section.relative .hover\:bg-white:hover {
+  background-color: #FFFFFF !important;
+}
+
+section.relative .hover\:text-black:hover {
+  color: #000000 !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   TABLE STRIPING & ROWS
+   Clean look on beige backgrounds
+   ═══════════════════════════════════════════════════ */
+
+table thead {
+  background-color: rgba(45, 106, 79, 0.06) !important;
+}
+
+table thead th {
+  color: var(--theme-text-muted) !important;
+}
+
+table tbody tr {
+  border-color: var(--theme-border-light) !important;
+}
+
+table tbody tr:hover {
+  background-color: rgba(45, 106, 79, 0.03) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   FORM INPUT OVERRIDES
+   Inputs get beige bg with green borders on focus
+   ═══════════════════════════════════════════════════ */
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+input[type="tel"],
+input[type="search"],
+textarea,
+select {
+  color-scheme: light !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   LOADING STATE
+   ═══════════════════════════════════════════════════ */
+
+.min-h-screen.bg-black {
+  background-color: var(--theme-bg) !important;
+}
+
+.min-h-screen.bg-black .text-white {
+  color: var(--theme-text) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   GRADIENT TEXT (keep working on beige)
+   ═══════════════════════════════════════════════════ */
+
+.bg-gradient-to-r.from-accent {
+  --tw-gradient-from: var(--theme-accent) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   CONFIRMATION MODAL
+   ═══════════════════════════════════════════════════ */
+.bg-red-600 {
+  background-color: #DC2626 !important;
+  color: #FFFFFF !important;
+}
+
+.hover\:bg-red-700:hover {
+  background-color: #B91C1C !important;
 }
