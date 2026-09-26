@@ -36,11 +36,11 @@ export default function Overview() {
         );
         const snap = await getDocs(q);
         const bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as SlotBooking));
-        
+
         // Filter for upcoming (date >= today)
         const today = new Date().toISOString().split('T')[0];
         const upcoming = bookings.filter((b) => b.date >= today);
-        
+
         // Sort by date and time
         upcoming.sort((a, b) => {
           if (a.date === b.date) {
@@ -48,7 +48,7 @@ export default function Overview() {
           }
           return a.date.localeCompare(b.date);
         });
-        
+
         setUpcomingBookings(upcoming);
       } catch (err) {
         console.error('Failed to fetch bookings:', err);
@@ -115,8 +115,8 @@ export default function Overview() {
           </h1>
           <p className="text-gray-400 font-medium">Ready to crush your goals today?</p>
         </div>
-        <Link 
-          to="/dashboard/schedule" 
+        <Link
+          to="/dashboard/schedule"
           className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-sm font-bold uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(170,59,255,0.3)] hover:shadow-[0_0_30px_rgba(170,59,255,0.5)] whitespace-nowrap"
         >
           <Dumbbell size={18} />
@@ -126,7 +126,7 @@ export default function Overview() {
 
       {/* Membership Status Banner */}
       {!isMembershipActive && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 p-6 bg-red-500/10 border border-red-500/30 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
@@ -143,7 +143,7 @@ export default function Overview() {
         {quickStats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <motion.div 
+            <motion.div
               key={stat.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -167,7 +167,7 @@ export default function Overview() {
       <div className="bg-zinc-900 border border-white/10 rounded-sm p-6 lg:p-8 relative overflow-hidden">
         {/* Abstract Background Element */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
-        
+
         <div className="flex justify-between items-center mb-8 relative z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-accent/20 text-accent">
@@ -199,13 +199,13 @@ export default function Overview() {
               const bDate = new Date(booking.date);
               const month = bDate.toLocaleString('default', { month: 'short' });
               const day = bDate.getDate();
-              
+
               return (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  key={booking.id} 
+                  key={booking.id}
                   className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-5 rounded-sm border border-white/5 bg-black/40 hover:bg-white/5 transition-all group"
                 >
                   <div className="flex flex-row sm:flex-col items-center sm:justify-center min-w-[80px] sm:border-r border-white/10 pr-4 gap-3 sm:gap-0">

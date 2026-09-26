@@ -239,7 +239,7 @@ export default function Login() {
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-white/15 rounded-sm shadow-sm text-sm font-semibold text-white bg-zinc-800/80 hover:bg-zinc-800 hover:border-white/30 focus:outline-none transition-all disabled:opacity-50 active:scale-[0.99]"
+                    className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-black/10 rounded-sm shadow-sm text-sm font-semibold text-zinc-900 bg-white hover:bg-gray-50 focus:outline-none transition-all disabled:opacity-50 active:scale-[0.99]"
                   >
                     <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                       <path
