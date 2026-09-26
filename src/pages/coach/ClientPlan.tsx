@@ -179,7 +179,6 @@ export default function ClientPlan() {
     setExercises((prev) => prev.map((ex) => (ex.id === id ? { ...ex, ...patch } : ex)));
   };
 
-  const addExerciseRow = () => setExercises((prev) => [...prev, emptyExercise()]);
 
   const removeExerciseRow = (id: string) =>
     setExercises((prev) => (prev.length > 1 ? prev.filter((ex) => ex.id !== id) : prev));
@@ -640,7 +639,7 @@ export default function ClientPlan() {
                                     <Plus size={10} /> Add
                                   </button>
                                 </td>
-                              )}}
+                              )}
                             <td className="p-1">
                               <input
                                 type="text"
@@ -699,7 +698,8 @@ export default function ClientPlan() {
                           </tr>
                         ))}
                       </React.Fragment>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
