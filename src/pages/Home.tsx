@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import About from '../components/About';
 import Team from '../components/Team';
 import Programs from '../components/Programs';
@@ -19,7 +20,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-6xl md:text-8xl lg:text-9xl font-heading font-black uppercase tracking-tighter mb-6"
+            className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-heading font-black uppercase tracking-tighter mb-6"
             style={{ color: '#FFFFFF' }}
           >
             Train Hard.<br />
@@ -44,20 +45,22 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <button 
-              className="bg-accent hover:bg-accent/90 px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+            <Link 
+              to="/join"
+              className="bg-accent hover:bg-accent/90 px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95 text-center"
               style={{ color: '#FAF7F0' }}
             >
               Join GV FIIT
-            </button>
-            <button 
-              className="bg-transparent border-2 hover:text-black px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all"
+            </Link>
+            <a 
+              href="#membership"
+              className="bg-transparent border-2 hover:text-black px-8 py-4 rounded-sm text-lg font-bold uppercase tracking-widest transition-all flex items-center justify-center"
               style={{ color: '#FFFFFF', borderColor: '#FFFFFF' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#1E2924'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
             >
               Book A Session
-            </button>
+            </a>
           </motion.div>
         </div>
       </section>

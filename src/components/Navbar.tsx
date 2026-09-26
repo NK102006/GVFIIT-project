@@ -34,7 +34,7 @@ export default function Navbar() {
 
   return (
     <div id="main-navbar">
-      <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10 transition-all duration-300">
+      <nav className="fixed top-0 w-full z-50 bg-[#F3EBDD]/95 backdrop-blur-md border-b border-[#1E2924]/10 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
@@ -58,7 +58,7 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <div className="flex items-center space-x-4 border-l border-white/20 pl-6">
+              <div className="flex items-center space-x-4 border-l border-[#1E2924]/20 pl-6">
                 {user ? (
                   <>
                     <Link
@@ -70,7 +70,7 @@ export default function Navbar() {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
+                      className="bg-zinc-800 hover:bg-zinc-700 text-[#1E2924] px-4 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
                     >
                       <LogOut size={16} />
                       Logout
@@ -101,7 +101,7 @@ export default function Navbar() {
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-gray-300 hover:text-white p-2"
+                className="text-[#1E2924] hover:text-[#315C4A] p-2"
               >
                 {isOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
@@ -116,7 +116,7 @@ export default function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-black/95 backdrop-blur-xl border-b border-white/10 overflow-hidden"
+              className="md:hidden bg-[#FAF7F0]/95 backdrop-blur-xl border-b border-[#1E2924]/10 overflow-hidden"
             >
               <div className="px-4 pt-2 pb-6 flex flex-col space-y-4">
                 {navLinks.map((link) => (
@@ -130,7 +130,7 @@ export default function Navbar() {
                   </a>
                 ))}
 
-                <div className="pt-4 mt-2 border-t border-white/10 flex flex-col space-y-4">
+                <div className="pt-4 mt-2 border-t border-[#1E2924]/10 flex flex-col space-y-4">
                   {user ? (
                     <>
                       <Link

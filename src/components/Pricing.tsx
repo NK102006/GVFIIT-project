@@ -49,7 +49,10 @@ export default function Pricing() {
               className={`relative bg-zinc-900 rounded-sm border ${plan.highlighted ? 'border-accent shadow-[0_0_30px_rgba(170,59,255,0.15)]' : 'border-white/10'} p-8 flex flex-col`}
             >
               {plan.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white px-4 py-1 rounded-sm text-xs font-bold uppercase tracking-widest">
+                <div 
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-sm text-xs font-bold uppercase tracking-widest"
+                  style={{ backgroundColor: '#FAF7F0', color: '#315C4A', border: '1px solid #315C4A' }}
+                >
                   Most Popular
                 </div>
               )}

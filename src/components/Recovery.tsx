@@ -1,7 +1,32 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { collection, query, getDocs, limit } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export default function Recovery() {
+  const [realSlots, setRealSlots] = useState<{startTime: string, fee: number}[]>([]);
+
+  useEffect(() => {
+    if (!db?.app) return;
+    getDocs(query(collection(db, 'iceBathSlots'), limit(3)))
+      .then(snap => {
+        const slots = snap.docs.map(d => d.data() as {startTime: string, fee: number});
+        slots.sort((a, b) => a.startTime.localeCompare(b.startTime));
+        setRealSlots(slots);
+      })
+      .catch(console.error);
+  }, []);
+
+  const formatTime = (time: string) => {
+    if (!time) return '';
+    const [h, m] = time.split(':');
+    const hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12.toString().padStart(2, '0')}:${m} ${ampm}`;
+  };
+
   return (
     <section id="recovery" className="py-24 bg-zinc-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,18 +57,18 @@ export default function Recovery() {
                 <div className="space-y-3 pt-4 border-t border-white/5">
                   <div className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">Available Sessions</div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300 font-mono">05:00 PM</span>
-                    <span className="text-green-500 text-sm font-bold uppercase tracking-wider">Available</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500 font-mono">06:00 PM</span>
-                    <span className="text-gray-600 text-sm font-bold uppercase tracking-wider">Booked</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300 font-mono">07:00 PM</span>
-                    <span className="text-green-500 text-sm font-bold uppercase tracking-wider">Available</span>
-                  </div>
+                  {realSlots.length > 0 ? (
+                    realSlots.map((slot, idx) => (
+                      <div key={idx} className="flex justify-between items-center">
+                        <span className="text-gray-300 font-mono">{formatTime(slot.startTime)}</span>
+                        <span className="text-green-500 text-sm font-bold uppercase tracking-wider">Available</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 font-mono text-sm">No sessions scheduled</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -56,9 +81,12 @@ export default function Recovery() {
             </motion.div>
           </div>
 
-          <div className="lg:w-1/2 min-h-[400px] relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent hidden lg:block" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent lg:hidden" />
+          <div className="lg:w-1/2 min-h-[400px] flex items-center justify-center p-4 lg:p-0">
+            <img 
+              src="/images/Icebath.png" 
+              alt="Ice Bath Recovery" 
+              className="w-full h-full object-contain object-right"
+            />
           </div>
 
         </div>

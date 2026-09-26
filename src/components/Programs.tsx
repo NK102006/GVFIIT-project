@@ -62,21 +62,21 @@ export default function Programs() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="group relative overflow-hidden rounded-sm aspect-[16/9] md:aspect-[4/3] lg:aspect-[16/9]"
+              className="group relative overflow-hidden rounded-sm aspect-square sm:aspect-[4/3] lg:aspect-[16/9]"
               style={{ backgroundColor: '#EDE5D4' }}
             >
               <img src={program.image} alt={program.name} className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <h4 className="text-2xl font-heading font-bold mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500" style={{ color: '#FFFFFF' }}>{program.name}</h4>
-                <p className="text-sm mb-6 opacity-0 h-0 group-hover:h-auto group-hover:opacity-100 transition-all duration-500 delay-100" style={{ color: '#D1D5DB' }}>
+              <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-end">
+                <h4 className="text-2xl font-heading font-bold mb-2 lg:translate-y-4 lg:group-hover:translate-y-0 transition-transform duration-500" style={{ color: '#FFFFFF' }}>{program.name}</h4>
+                <p className="text-sm mb-6 opacity-100 lg:opacity-0 h-auto lg:h-0 lg:group-hover:h-auto lg:group-hover:opacity-100 transition-all duration-500 delay-100" style={{ color: '#D1D5DB' }}>
                   {program.description}
                 </p>
                 <div className="overflow-hidden">
                   <button 
                     onClick={() => setSelectedProgram(program)}
-                    className="px-6 py-2 rounded-sm text-xs font-bold uppercase tracking-widest transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-500 delay-200"
+                    className="px-6 py-2 rounded-sm text-xs font-bold uppercase tracking-widest transform translate-y-0 lg:translate-y-[150%] lg:group-hover:translate-y-0 transition-transform duration-500 delay-200"
                     style={{ backgroundColor: '#315C4A', color: '#FAF7F0' }}
                   >
                     Explore Program

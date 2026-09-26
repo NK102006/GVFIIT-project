@@ -119,15 +119,15 @@ export default function Team() {
               <img src={coach.image} alt={coach.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80" />
 
-              <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+              <div className="absolute bottom-0 left-0 w-full p-8 translate-y-0 lg:translate-y-4 lg:group-hover:translate-y-0 transition-transform duration-500">
                 <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#B89B5E' }}>{coach.role}</div>
                 <h4 className="text-2xl font-heading font-bold mb-2" style={{ color: '#FFFFFF' }}>{coach.name}</h4>
-                <p className="text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100" style={{ color: '#D1D5DB' }}>
+                <p className="text-sm mb-4 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 delay-100" style={{ color: '#D1D5DB' }}>
                   Specialization: {coach.specialization}
                 </p>
                 <button 
                   onClick={() => setSelectedCoach(coach)}
-                  className="opacity-0 group-hover:opacity-100 text-sm font-bold uppercase tracking-widest pb-1 transition-all duration-500 delay-200"
+                  className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-sm font-bold uppercase tracking-widest pb-1 transition-all duration-500 delay-200"
                   style={{ color: '#FFFFFF', borderBottom: '1px solid #B89B5E' }}
                 >
                   View Profile

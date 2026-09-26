@@ -37,7 +37,7 @@ export default function About() {
               Whether you are an athlete looking to improve performance or someone beginning their fitness journey, our expert coaches provide the guidance, programming, and environment you need to succeed.
             </p>
 
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {stats.map((stat, index) => (
                 <div key={index} className="pl-4" style={{ borderLeft: '2px solid #B89B5E' }}>
                   <div className="text-4xl font-heading font-bold mb-1" style={{ color: '#FAF7F0' }}>{stat.value}</div>
