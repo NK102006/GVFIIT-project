@@ -484,16 +484,6 @@ export default function ClientPlan() {
                   </div>
                   <div className="mt-3 overflow-x-auto border border-white/5 rounded-sm">
                     <table className="w-full text-left text-xs whitespace-nowrap">
-                      <thead className="bg-white/5 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider">
-                        <tr>
-                          <th className="px-2 py-1.5 w-24">Day</th>
-                          <th className="px-2 py-1.5">Exercise</th>
-                          <th className="px-2 py-1.5">Sets/Reps</th>
-                          <th className="px-2 py-1.5">Weight</th>
-                          <th className="px-2 py-1.5">RPE</th>
-                          <th className="px-2 py-1.5">Rest</th>
-                        </tr>
-                      </thead>
                       <tbody>
                         {Object.entries(
                           plan.exercises.reduce((acc, ex) => {
@@ -506,6 +496,14 @@ export default function ClientPlan() {
                           const groupTitle = exList[0]?.dayTitle || '';
                           return (
                             <React.Fragment key={dayName}>
+                              <tr className="bg-white/5 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider">
+                                <th className="px-2 py-1.5 w-24">Day</th>
+                                <th className="px-2 py-1.5">Exercise</th>
+                                <th className="px-2 py-1.5">Sets/Reps</th>
+                                <th className="px-2 py-1.5">Weight</th>
+                                <th className="px-2 py-1.5">RPE</th>
+                                <th className="px-2 py-1.5">Rest</th>
+                              </tr>
                               {groupTitle && (
                                 <tr className="bg-white/5">
                                   <td colSpan={6} className="px-3 py-2 font-bold text-sm text-white uppercase tracking-wide">
@@ -570,17 +568,6 @@ export default function ClientPlan() {
 
               <div className="overflow-x-auto border border-white/10 rounded-sm">
                 <table className="w-full text-left text-sm whitespace-nowrap">
-                  <thead className="bg-white/5 border-b border-white/10 text-xs font-bold uppercase tracking-widest text-gray-400">
-                    <tr>
-                      <th className="px-3 py-2 font-semibold w-28">Day</th>
-                      <th className="px-3 py-2 font-semibold">Exercise</th>
-                      <th className="px-3 py-2 font-semibold">Sets/Reps</th>
-                      <th className="px-3 py-2 font-semibold">Weight</th>
-                      <th className="px-3 py-2 font-semibold">RPE</th>
-                      <th className="px-3 py-2 font-semibold">Rest</th>
-                      <th className="px-3 py-2 font-semibold w-10"></th>
-                    </tr>
-                  </thead>
                   <tbody>
                     {Object.entries(
                       exercises.reduce((acc, ex) => {
@@ -593,6 +580,15 @@ export default function ClientPlan() {
                       const groupTitle = exList[0]?.dayTitle || '';
                       return (
                         <React.Fragment key={dayName}>
+                          <tr className="bg-white/5 border-b border-white/10 text-xs font-bold uppercase tracking-widest text-gray-400">
+                            <th className="px-3 py-2 font-semibold w-28">Day</th>
+                            <th className="px-3 py-2 font-semibold">Exercise</th>
+                            <th className="px-3 py-2 font-semibold">Sets/Reps</th>
+                            <th className="px-3 py-2 font-semibold">Weight</th>
+                            <th className="px-3 py-2 font-semibold">RPE</th>
+                            <th className="px-3 py-2 font-semibold">Rest</th>
+                            <th className="px-3 py-2 font-semibold w-10"></th>
+                          </tr>
                           <tr className="bg-white/5">
                             <td colSpan={7} className="px-3 py-2">
                               <input
