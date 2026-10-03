@@ -67,7 +67,29 @@ export default function Clients() {
         getDocs(query(collection(db, 'profiles'), where('role', '==', 'CLIENT'))),
         getDocs(collection(db, 'coaches')),
       ]);
-      setClients(clientsSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Profile)));
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const loadedClients = await Promise.all(
+        clientsSnap.docs.map(async (d) => {
+          const data = d.data() as Profile;
+          if (data.planExpiry && (data.membershipStatus === 'ACTIVE' || data.membershipStatus === 'TRIAL')) {
+            const expiryDate = new Date(data.planExpiry);
+            if (expiryDate < today) {
+              try {
+                await updateDoc(doc(db, 'profiles', d.id), { membershipStatus: 'EXPIRED' });
+                data.membershipStatus = 'EXPIRED';
+              } catch (e) {
+                console.error('Failed to auto-expire client:', e);
+              }
+            }
+          }
+          return { ...data, id: d.id };
+        })
+      );
+
+      setClients(loadedClients);
       setCoaches(
         coachesSnap.docs
           .map((d) => ({ id: d.id, fullName: d.data().fullName } as CoachOption))
@@ -329,8 +351,14 @@ export default function Clients() {
                 <input
                   type="tel"
                   required
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  title="Phone number must be exactly 10 digits"
                   value={form.phone}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    setForm((f) => ({ ...f, phone: val }));
+                  }}
                   className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
@@ -387,7 +415,6 @@ export default function Clients() {
                   <input
                     type="date"
                     value={form.planStart}
-                    max={form.planExpiry || undefined}
                     onChange={(e) => {
                       const newStart = e.target.value;
                       setForm((f) => ({
@@ -406,8 +433,15 @@ export default function Clients() {
                   <input
                     type="date"
                     value={form.planExpiry}
-                    min={form.planStart || undefined}
-                    onChange={(e) => setForm((f) => ({ ...f, planExpiry: e.target.value }))}
+                    onChange={(e) => {
+                      const newExpiry = e.target.value;
+                      setForm((f) => ({
+                        ...f,
+                        planExpiry: newExpiry,
+                        // Clear start date if it's now after the new end date
+                        planStart: f.planStart && f.planStart > newExpiry ? '' : f.planStart,
+                      }));
+                    }}
                     className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>

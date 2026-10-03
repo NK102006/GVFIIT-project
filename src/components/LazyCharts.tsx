@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 
 // Lazy load the charts so recharts doesn't block the initial render
 const MonthlyBarChart = lazy(() => import('./MonthlyBarChart'));

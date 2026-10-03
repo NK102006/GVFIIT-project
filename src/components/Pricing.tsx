@@ -5,23 +5,47 @@ import { Link } from 'react-router-dom';
 const plans = [
   {
     name: "GROUP TRAINING",
-    duration: "3 Months (3 days a week)",
-    price: "₹17500",
-    features: ["Access to gym floor", "3 InBody Assessments", "Locker access", "1 Group Class/week", "Nutrition Guidelines"],
+    duration: "3 Months (36 Sessions)",
+    price: "₹18500",
+    features: [
+      "12 sessions a month (36 in a quarter)",
+      "Group of not more than 4 in a batch",
+      "Personalised plans",
+      "No make up sessions",
+      "No extensions of plan",
+      "One nutrition consultation",
+      "One recovery session"
+    ],
     highlighted: false
   },
   {
     name: "ONE TO ONE SESSIONS",
-    duration: "1-2 Hour",
-    price: "₹1500",
-    features: ["Access to gym floor", "3 InBody Assessments", "Locker access", "1 Group Class/week", "Nutrition Guidelines"],
+    duration: "1 Month (12 Sessions)",
+    price: "₹18000",
+    features: [
+      "12 sessions a month",
+      "One to one session",
+      "Personalised plan",
+      "No make up sessions",
+      "No extension in plan",
+      "One nutrition consultation",
+      "One recovery session"
+    ],
     highlighted: true
   },
   {
-    name: "GROUP SESSION",
-    duration: "6 Months (3 days a week)",
-    price: "₹31000",
-    features: ["Access to gym floor", "Unlimited InBody", "Priority Locker", "Unlimited Group Classes", "Custom Diet Plan", "2 Ice Bath Sessions"],
+    name: "HALF YEARLY PACKAGE",
+    duration: "6 Months (72 Sessions)",
+    price: "₹35000",
+    features: [
+      "72 sessions in 6 months",
+      "+1 month extension (if unable to finish)",
+      "Group of not more than 4 in a batch",
+      "Personalised plan",
+      "No make up sessions",
+      "2 nutrition consultations",
+      "2 recovery sessions"
+    ],
     highlighted: false
   }
 ];

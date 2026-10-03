@@ -395,8 +395,14 @@ export default function Coaches() {
                 <label className="block text-xs font-medium text-gray-400 mb-1">Phone</label>
                 <input
                   type="tel"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  title="Phone number must be exactly 10 digits"
                   value={form.phone}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    setForm((f) => ({ ...f, phone: val }));
+                  }}
                   className="w-full px-3 py-2 border border-white/20 rounded-sm bg-black text-white text-sm focus:outline-none focus:border-accent transition-colors"
                 />
               </div>

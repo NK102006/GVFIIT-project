@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { Search, ChevronRight } from 'lucide-react';
 import { db } from '../../lib/firebase';
 import type { Profile } from '../../contexts/AuthContext';
@@ -21,7 +21,29 @@ export default function CoachClients() {
       try {
         const q = query(collection(db, 'profiles'), where('role', '==', 'CLIENT'));
         const snap = await getDocs(q);
-        setClients(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Profile)));
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const loadedClients = await Promise.all(
+          snap.docs.map(async (d) => {
+            const data = d.data() as Profile;
+            if (data.planExpiry && (data.membershipStatus === 'ACTIVE' || data.membershipStatus === 'TRIAL')) {
+              const expiryDate = new Date(data.planExpiry);
+              if (expiryDate < today) {
+                try {
+                  await updateDoc(doc(db, 'profiles', d.id), { membershipStatus: 'EXPIRED' });
+                  data.membershipStatus = 'EXPIRED';
+                } catch (e) {
+                  console.error('Failed to auto-expire client:', e);
+                }
+              }
+            }
+            return { ...data, id: d.id };
+          })
+        );
+        
+        setClients(loadedClients);
       } catch (err) {
         console.error(err);
         setError('Failed to load clients.');

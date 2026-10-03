@@ -20,70 +20,14 @@ const InstagramIcon = ({ size = 24, className = "" }: { size?: number, className
   </svg>
 );
 
-const socialPosts = [
-  {
-    id: 1,
-    type: 'video',
-    src: '/videos/Warm-up is not a formality-it is a crucial part of athletic performance. A proper warm-up increa.mp4'
-  },
-  {
-    id: 2,
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop&sig=2'
-  },
-  {
-    id: 3,
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop&sig=3'
-  },
-  {
-    id: 4,
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop&sig=4'
-  }
-];
+
 
 export default function Footer() {
   return (
     <footer className="bg-black pt-24 pb-12 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Instagram Section Placeholder */}
-        <div className="mb-24 text-center">
-          <h3 className="text-2xl font-heading font-bold text-white mb-2">LATEST FROM GV FIIT</h3>
-          <p className="text-gray-400 mb-8">Follow @GVFIIT for updates, tips, and motivation.</p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {socialPosts.map((post) => (
-              <div key={post.id} className="aspect-square bg-zinc-900 border border-white/5 relative group cursor-pointer overflow-hidden rounded-sm">
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 z-20">
-                  <InstagramIcon size={32} className="text-white" />
-                </div>
-                {post.type === 'video' ? (
-                  <video
-                    src={post.src}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:scale-110 group-hover:opacity-100 transition-all duration-700 z-10"
-                  />
-                ) : (
-                  <img
-                    src={post.src}
-                    alt="Instagram Post"
-                    className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:scale-110 group-hover:opacity-100 transition-all duration-700 z-10"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <button className="border border-white/20 hover:border-accent hover:text-accent text-white px-8 py-3 rounded-sm text-sm font-bold uppercase tracking-widest flex items-center gap-2 mx-auto transition-all">
-            <InstagramIcon size={18} />
-            <a href="https://www.instagram.com/iamgauravvaghela?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==">Follow on Instagram</a>
-          </button>
-        </div>
 
         {/* Footer Info */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pt-12 border-t border-white/10">
@@ -96,7 +40,7 @@ export default function Footer() {
               Premium fitness facility dedicated to strength, performance, and holistic recovery.
             </p>
             <div className="flex gap-4 text-gray-400">
-              <a href="#" className="hover:text-accent transition-colors"><InstagramIcon size={24} /></a>
+              <a href="https://www.instagram.com/iamgauravvaghela" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors"><InstagramIcon size={24} /></a>
             </div>
           </div>
 
@@ -112,18 +56,30 @@ export default function Footer() {
 
           <div>
             <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">Contact</h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3 text-gray-400">
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3 text-gray-400 mb-4">
                 <MapPin size={20} className="shrink-0 text-accent mt-0.5" />
-                <span>123 Elite Fitness Ave,<br />Mumbai, MH 400001</span>
+                <span>Ahmedabad, Gujarat</span>
+              </li>
+              
+              <li className="text-xs font-bold uppercase tracking-widest text-white">Gaurav Sir</li>
+              <li className="flex items-center gap-3 text-gray-400">
+                <Phone size={16} className="shrink-0 text-accent" />
+                <span className="text-sm">+91 97276 71212</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-400 pb-2">
+                <Mail size={16} className="shrink-0 text-accent" />
+                <span className="text-sm">gaurav2841992@gmail.com</span>
+              </li>
+
+              <li className="text-xs font-bold uppercase tracking-widest text-white pt-2 border-t border-white/10">Soham Sir</li>
+              <li className="flex items-center gap-3 text-gray-400">
+                <Phone size={16} className="shrink-0 text-accent" />
+                <span className="text-sm">+91 86902 90393</span>
               </li>
               <li className="flex items-center gap-3 text-gray-400">
-                <Phone size={20} className="shrink-0 text-accent" />
-                <span>+91 97276 71212</span>
-              </li>
-              <li className="flex items-center gap-3 text-gray-400">
-                <Mail size={20} className="shrink-0 text-accent" />
-                <span>info@gvfiit.com</span>
+                <Mail size={16} className="shrink-0 text-accent" />
+                <span className="text-sm">Goyalsoham19@gmail.com</span>
               </li>
             </ul>
           </div>

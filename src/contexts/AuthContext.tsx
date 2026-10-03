@@ -14,6 +14,7 @@ export type Profile = {
   planType: 'NONE' | 'Group Training (3 Months)' | 'One to One Sessions' | 'Group Session (6 Months)';
   planExpiry: string | null;
   avatar: string | null;
+  createdAt?: string;
 };
 
 export type StaffRole = 'ADMIN' | 'COACH';
@@ -73,7 +74,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        setProfile({ id: docSnap.id, ...docSnap.data() } as Profile);
+        const data = docSnap.data() as Profile;
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (data.planExpiry && (data.membershipStatus === 'ACTIVE' || data.membershipStatus === 'TRIAL')) {
+          const expiryDate = new Date(data.planExpiry);
+          if (expiryDate < today) {
+            try {
+              await setDoc(docRef, { membershipStatus: 'EXPIRED' }, { merge: true });
+              data.membershipStatus = 'EXPIRED';
+            } catch (e) {
+              console.error('Failed to auto-expire client profile:', e);
+            }
+          }
+        }
+        
+        setProfile({ ...data, id: docSnap.id });
       } else {
         // Auto-heal: Create a profile if it's missing (e.g. if Firestore was down during signup)
         if (auth.currentUser) {

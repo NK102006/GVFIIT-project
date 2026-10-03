@@ -116,9 +116,9 @@ export default function Programs() {
                 border: '1px solid rgba(49, 92, 74, 0.15)' 
               }}
             >
-              <div className="h-48 md:h-64 relative">
-                <img src={selectedProgram.image} alt={selectedProgram.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #FAF7F0, transparent)' }} />
+              <div className="h-64 md:h-80 relative">
+                <img src={selectedProgram.image} alt={selectedProgram.name} className="w-full h-full object-cover object-top" />
+                <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-[#FAF7F0] to-transparent pointer-events-none" />
                 <button 
                   onClick={() => setSelectedProgram(null)}
                   className="absolute top-4 right-4 p-2 rounded-full transition-colors"

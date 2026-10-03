@@ -137,7 +137,7 @@ export default function Overview() {
 
           {upcomingBookings.length > 0 ? (
             <div className="space-y-4 flex-1">
-              {upcomingBookings.slice(0, 3).map((session: SlotBooking, i: number) => (
+              {upcomingBookings.slice(0, 3).map((session: SlotBooking) => (
                 <div key={session.id} className="bg-black/50 border border-white/5 p-4 rounded-sm flex items-center justify-between">
                   <div>
                     <p className="font-bold mb-1">{formatDate(session.date)}</p>

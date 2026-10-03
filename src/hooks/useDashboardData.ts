@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { Profile } from '../contexts/AuthContext';
 import type { ExercisePlan } from '../types/exercisePlan';

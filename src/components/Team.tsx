@@ -9,9 +9,7 @@ const founder = {
   bio: [
     "As an Ex-National player and certified ASCA Coach, Gaurav brings a unique blend of athletic excellence and strategic vision to his coaching. Holding a CMA and an MBA in Finance, his disciplined approach translates directly into his training methodologies.",
     "He is a BCCI Level 1 Umpire and the Promoter of the Pooja Institute of Sports Research and Development, an NGO based at Dharoi focused on advancing sports.",
-    "A driven sports entrepreneur, Gaurav is the Founder of GV FIIT and the Co-founder of both DNA Sports and GNV Fitness Studio.",
-    "\"Dreams become milestones when dedication meets opportunity. 🏆\"",
-    "Proud and grateful to have been awarded 1st Prize in the Undergraduate Category – Industry Impact Challenge at the STESSA 2026 International Conference. A milestone to remember. A journey to continue."
+    "A driven sports entrepreneur, Gaurav is the Founder of GV FIIT and the Co-founder of both DNA Sports and GNV Fitness Studio."
   ],
   certs: ["ASCA Associate L2 Strength & Conditioning Coach"]
 };
@@ -177,7 +175,7 @@ export default function Team() {
                     alt={selectedCoach.name} 
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 sm:bg-gradient-to-r" style={{ background: 'linear-gradient(to top, #FAF7F0, transparent)' }} />
+                  <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-[#FAF7F0] to-transparent sm:hidden pointer-events-none" />
                 </div>
                 
                 <div className="sm:col-span-3 p-6 sm:p-8 sm:pl-0 flex flex-col justify-center">

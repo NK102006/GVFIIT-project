@@ -85,7 +85,24 @@ export default function ClientPlan() {
       // 1. Load Client
       const clientSnap = await getDoc(doc(db, 'profiles', clientId));
       if (clientSnap.exists()) {
-        setClient({ id: clientSnap.id, ...clientSnap.data() } as Profile);
+        const data = clientSnap.data() as Profile;
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (data.planExpiry && (data.membershipStatus === 'ACTIVE' || data.membershipStatus === 'TRIAL')) {
+          const expiryDate = new Date(data.planExpiry);
+          if (expiryDate < today) {
+            try {
+              await updateDoc(doc(db, 'profiles', clientId), { membershipStatus: 'EXPIRED' });
+              data.membershipStatus = 'EXPIRED';
+            } catch (e) {
+              console.error('Failed to auto-expire client:', e);
+            }
+          }
+        }
+
+        setClient({ ...data, id: clientSnap.id });
       } else {
         setClient(null);
         setError('Client not found.');

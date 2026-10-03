@@ -346,12 +346,12 @@ export default function MetricsTracker({ clientId, readOnly = false }: MetricsTr
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-400">
-                    <div>W: <strong className="text-gray-200">{record.weight}</strong> kg</div>
-                    <div>Target: <strong className="text-gray-200">{record.targetWeight}</strong> kg</div>
-                    <div>Fat: <strong className="text-red-400">{record.bodyFatPercentage}%</strong></div>
-                    <div>Muscle: <strong className="text-emerald-400">{record.muscleMassPercentage}%</strong></div>
-                    <div>BMI: <strong className="text-gray-200">{record.bmiScore}</strong></div>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-500">
+                    <div>W: <strong className="text-blue-500">{record.weight}</strong> kg</div>
+                    <div>Target: <strong className="text-orange-500">{record.targetWeight}</strong> kg</div>
+                    <div>Fat: <strong className="text-red-500">{record.bodyFatPercentage}%</strong></div>
+                    <div>Muscle: <strong className="text-emerald-500">{record.muscleMassPercentage}%</strong></div>
+                    <div>BMI: <strong className="text-purple-500">{record.bmiScore}</strong></div>
                   </div>
                   
                   {record.reportUrl && (
