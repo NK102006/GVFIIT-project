@@ -34,6 +34,7 @@ type IceBathBooking = {
   fee: number;
   timestamp: string;
   paymentStatus?: 'PAID' | 'UNPAID';
+  status?: 'PENDING' | 'CONFIRMED';
 };
 
 // Helper to add 20 mins to an HH:mm time string
@@ -198,6 +199,18 @@ export default function IceBathAdmin() {
     }
   };
 
+  const handleBookingStatus = async (bookingId: string, status: 'PENDING' | 'CONFIRMED') => {
+    try {
+      await updateDoc(doc(db, 'iceBathBookings', bookingId), {
+        status: status
+      });
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: status } : b));
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update booking status.');
+    }
+  };
+
   return (
     <div className="p-6 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -254,7 +267,6 @@ export default function IceBathAdmin() {
                     <th className="px-5 py-3 font-medium">Day</th>
                     <th className="px-5 py-3 font-medium">Time (20 mins)</th>
                     <th className="px-5 py-3 font-medium">Fee (₹)</th>
-                      <th className="px-5 py-3 font-medium">Status</th>
                     <th className="px-5 py-3 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
@@ -313,7 +325,8 @@ export default function IceBathAdmin() {
                       <th className="px-5 py-3 font-medium">Time</th>
                       <th className="px-5 py-3 font-medium">Client</th>
                       <th className="px-5 py-3 font-medium">Fee (₹)</th>
-                      <th className="px-5 py-3 font-medium">Status</th>
+                      <th className="px-5 py-3 font-medium">Payment</th>
+                      <th className="px-5 py-3 font-medium">Booking Status</th>
                       <th className="px-5 py-3 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
@@ -337,6 +350,20 @@ export default function IceBathAdmin() {
                           >
                             <option value="UNPAID" className="bg-black text-white">Unpaid</option>
                             <option value="PAID" className="bg-black text-white">Paid</option>
+                          </select>
+                        </td>
+                        <td className="px-5 py-3">
+                          <select
+                            value={booking.status || 'PENDING'}
+                            onChange={(e) => handleBookingStatus(booking.id, e.target.value as 'PENDING' | 'CONFIRMED')}
+                            className={`px-2 py-1 text-xs font-bold rounded-sm border focus:outline-none transition-colors ${
+                              (booking.status || 'PENDING') === 'CONFIRMED' 
+                                ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}
+                          >
+                            <option value="PENDING" className="bg-black text-white">Pending</option>
+                            <option value="CONFIRMED" className="bg-black text-white">Confirmed</option>
                           </select>
                         </td>
                         <td className="px-5 py-3">

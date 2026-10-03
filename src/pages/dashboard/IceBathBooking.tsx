@@ -31,6 +31,7 @@ type IceBathBooking = {
   endTime: string;
   fee: number;
   timestamp: string;
+  status?: 'PENDING' | 'CONFIRMED';
 };
 
 export default function IceBathBooking() {
@@ -99,6 +100,7 @@ export default function IceBathBooking() {
         endTime: confirmSlot.endTime,
         fee: confirmSlot.fee,
         timestamp: new Date().toISOString(),
+        status: 'PENDING',
       });
       await loadData();
     } catch (err) {
@@ -148,18 +150,33 @@ export default function IceBathBooking() {
       </div>
 
       {myBooking ? (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-sm p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 mb-4">
-            <CheckCircle size={32} />
+        myBooking.status === 'CONFIRMED' ? (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-sm p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 mb-4">
+              <CheckCircle size={32} />
+            </div>
+            <h2 className="text-2xl font-heading font-bold text-white mb-2">You're Booked!</h2>
+            <p className="text-emerald-400/80 mb-6 max-w-md mx-auto">
+              You have an Ice Bath session confirmed on <strong className="text-emerald-400">{selectedDate}</strong> from <strong className="text-emerald-400">{myBooking.startTime} to {myBooking.endTime}</strong>.
+            </p>
+            <div className="inline-block px-4 py-2 bg-black/40 border border-emerald-500/30 rounded-sm text-sm text-gray-300">
+              Fee to be paid: <strong className="text-white">₹{myBooking.fee}</strong>
+            </div>
           </div>
-          <h2 className="text-2xl font-heading font-bold text-white mb-2">You're Booked!</h2>
-          <p className="text-emerald-400/80 mb-6 max-w-md mx-auto">
-            You have an Ice Bath session confirmed on <strong className="text-emerald-400">{selectedDate}</strong> from <strong className="text-emerald-400">{myBooking.startTime} to {myBooking.endTime}</strong>.
-          </p>
-          <div className="inline-block px-4 py-2 bg-black/40 border border-emerald-500/30 rounded-sm text-sm text-gray-300">
-            Fee to be paid: <strong className="text-white">₹{myBooking.fee}</strong>
+        ) : (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-sm p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/20 text-amber-400 mb-4">
+              <Clock size={32} />
+            </div>
+            <h2 className="text-2xl font-heading font-bold text-white mb-2">Booking Requested</h2>
+            <p className="text-amber-400/80 mb-6 max-w-md mx-auto">
+              Your request for an Ice Bath session on <strong className="text-amber-400">{selectedDate}</strong> from <strong className="text-amber-400">{myBooking.startTime} to {myBooking.endTime}</strong> is pending confirmation by an Admin.
+            </p>
+            <div className="inline-block px-4 py-2 bg-black/40 border border-amber-500/30 rounded-sm text-sm text-gray-300">
+              Fee to be paid upon confirmation: <strong className="text-white">₹{myBooking.fee}</strong>
+            </div>
           </div>
-        </div>
+        )
       ) : (
         <div>
           <h2 className="text-xl font-heading font-bold mb-4 flex items-center gap-2">
